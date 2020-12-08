@@ -11,8 +11,6 @@ const CONLL_STUCTURE: { [key: number]: any } = {
   9: { label: 'MISC', type: 'dict' },
 };
 
-export const sentenceConllToSentenceJson = (sentenceConll: string) => sentenceConll;
-
 export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => {
   const trimmedSentenceConll = sentenceConll.trim();
   const lineConlls = trimmedSentenceConll.split('\n');
@@ -33,8 +31,8 @@ export const _metaConllLinesToJson = (metaConllLines: string[]) => {
   const metaJson: { [key: string]: string } = {};
   for (const metaCouple of metaConllLines) {
     const [metaKey, metaValue] = metaCouple.split(' = ');
-    metaKey = metaKey.slice(2);
-    metaJson[metaKey] = metaValue;
+    const trimmedMetaKey = metaKey.slice(2);
+    metaJson[trimmedMetaKey] = metaValue;
   }
   return metaJson;
 };
