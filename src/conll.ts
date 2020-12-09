@@ -1,4 +1,58 @@
-const CONLL_STUCTURE: { [key: number]: any } = {
+export interface FeatureJson {
+  [key: string]: string;
+}
+
+export interface TokenJson {
+  ID: number;
+  FORM: string;
+  LEMMA: string;
+  UPOS: string;
+  XPOS: string;
+  FEATS: FeatureJson;
+  HEAD: number;
+  DEPREL: string;
+  DEPS: FeatureJson;
+  MISC: FeatureJson;
+  [key: string]: string | number | FeatureJson;
+}
+
+export interface TreeJson {
+  [key: number]: TokenJson;
+}
+
+export interface MetaJson {
+  [key: string]: string | number;
+}
+
+export interface SentenceJson {
+  treeJson: TreeJson;
+  metaJson: MetaJson;
+}
+
+const emptyTokenJson = (): TokenJson => ({
+  ID: -1,
+  FORM: '_',
+  LEMMA: '_',
+  UPOS: '_',
+  XPOS: '_',
+  FEATS: {},
+  HEAD: -1,
+  DEPREL: '_',
+  DEPS: {},
+  MISC: {},
+});
+const emptyFeatureJson = (): FeatureJson => ({});
+
+const emptyMetaJson = (): MetaJson => ({});
+
+const emptyTreeJson = (): TreeJson => ({});
+
+const emptySentenceJson = (): SentenceJson => ({
+  metaJson: {},
+  treeJson: {},
+});
+
+const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
   0: { label: 'ID', type: 'int' },
   1: { label: 'FORM', type: 'str' },
   2: { label: 'LEMMA', type: 'str' },
@@ -27,8 +81,8 @@ export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => 
   return { metaLines, treeLines };
 };
 
-export const _metaConllLinesToJson = (metaConllLines: string[]) => {
-  const metaJson: { [key: string]: string } = {};
+export const _metaConllLinesToJson = (metaConllLines: string[]): MetaJson => {
+  const metaJson: MetaJson = emptyMetaJson();
   for (const metaCouple of metaConllLines) {
     const [metaKey, metaValue] = metaCouple.split(' = ');
     const trimmedMetaKey = metaKey.slice(2);
@@ -36,8 +90,8 @@ export const _metaConllLinesToJson = (metaConllLines: string[]) => {
   }
   return metaJson;
 };
-export const _tabDictToJson = (featureConll: string) => {
-  const featureJson: { [key: string]: string } = {};
+export const _tabDictToJson = (featureConll: string): FeatureJson => {
+  const featureJson: FeatureJson = emptyFeatureJson();
   if (featureConll === '_') {
     return featureJson;
   }
@@ -49,7 +103,7 @@ export const _tabDictToJson = (featureConll: string) => {
   return featureJson;
 };
 
-export const _extractTokenTabData = (tokenTabData: string, type: string) => {
+export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
@@ -61,11 +115,11 @@ export const _extractTokenTabData = (tokenTabData: string, type: string) => {
   }
 };
 
-export const _tokenLineToJson = (tokenLine: string) => {
+export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   const trimmedTokenLine: string = tokenLine.trim();
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
 
-  const tokenJson: { [key: string]: any } = {};
+  const tokenJson: TokenJson = emptyTokenJson();
   for (const tabIndex in CONLL_STUCTURE) {
     if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STUCTURE[tabIndex];
@@ -79,8 +133,8 @@ export const _tokenLineToJson = (tokenLine: string) => {
   return tokenJson;
 };
 
-export const _treeConllLinesToJson = (treeConllLines: string[]) => {
-  const treeJson: { [key: number]: any } = {};
+export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
+  const treeJson: TreeJson = emptyTreeJson();
 
   let tokenIndex: number = 1;
   for (const tokenLine of treeConllLines) {
@@ -90,8 +144,8 @@ export const _treeConllLinesToJson = (treeConllLines: string[]) => {
   return treeJson;
 };
 
-export const sentenceConllToJson = (sentenceConll: string) => {
-  const sentenceJson: { [key: string]: any } = {};
+export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
+  const sentenceJson: SentenceJson = emptySentenceJson();
   const { metaLines, treeLines } = _seperateMetaAndTreeFromSentenceConll(sentenceConll);
   sentenceJson['metaJson'] = _metaConllLinesToJson(metaLines);
   sentenceJson['treeJson'] = _treeConllLinesToJson(treeLines);
@@ -99,8 +153,8 @@ export const sentenceConllToJson = (sentenceConll: string) => {
   return sentenceJson;
 };
 
-export const _tabJsonToDict = (featureJson: { [key: string]: string }) => {
-  const splittedFeatureConll = [];
+export const _tabJsonToDict = (featureJson: FeatureJson): string => {
+  const splittedFeatureConll: string[] = [];
   for (const featureKey in featureJson) {
     if (featureJson.hasOwnProperty(featureKey)) {
       const featureValue = featureJson[featureKey];
@@ -113,19 +167,19 @@ export const _tabJsonToDict = (featureJson: { [key: string]: string }) => {
   return featureConll;
 };
 
-export const _tabDataJsonToConll = (tabData: string | number | { [key: string]: string }, type: string) => {
+export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type: string) => {
   if (type === 'str') {
     return tabData as string;
   } else if (type === 'int') {
     return tabData.toString() as string;
   } else if (type === 'dict') {
-    return _tabJsonToDict(tabData as { [key: string]: string });
+    return _tabJsonToDict(tabData as FeatureJson);
   } else {
     throw new Error(`${type} is not a correct type`);
   }
 };
 
-export const _tokenJsonToLine = (tokenJson: { [key: string]: any }) => {
+export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
   const splittedTokenConll: string[] = [];
 
   for (const tabIndex in CONLL_STUCTURE) {
@@ -143,7 +197,7 @@ export const _tokenJsonToLine = (tokenJson: { [key: string]: any }) => {
   return tokenConll;
 };
 
-export const _treeJsonToConll = (treeJson: { [key: number]: any }) => {
+export const _treeJsonToConll = (treeJson: TreeJson): string => {
   const treeConllLines: string[] = [];
 
   for (const tokenIndex in treeJson) {
@@ -160,7 +214,7 @@ export const _treeJsonToConll = (treeJson: { [key: number]: any }) => {
   return treeConll;
 };
 
-export const _metaJsonToConll = (metaJson: { [key: string]: string }) => {
+export const _metaJsonToConll = (metaJson: MetaJson): string => {
   const metaConllLines: string[] = [];
 
   for (const metaKey in metaJson) {
@@ -178,7 +232,7 @@ export const _metaJsonToConll = (metaJson: { [key: string]: string }) => {
   return metaConll;
 };
 
-export const sentenceJsonToConll = (sentenceJson: { [key: string]: any }) => {
+export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
   const metaConll = _metaJsonToConll(sentenceJson['metaJson']);
   const treeConll = _treeJsonToConll(sentenceJson['treeJson']);
 

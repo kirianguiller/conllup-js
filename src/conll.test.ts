@@ -11,7 +11,11 @@ import {
   _tokenJsonToLine,
   _treeJsonToConll,
   _metaJsonToConll,
-  sentenceJsonToConll
+  sentenceJsonToConll,
+  MetaJson,
+  TreeJson,
+  SentenceJson,
+  TokenJson
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -20,7 +24,7 @@ const featureJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
 const tokenLine: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
 
-const tokenJson: { [key: string]: any } = {
+const tokenJson: TokenJson = {
   ID: 1,
   FORM: 'form',
   LEMMA: 'lemma',
@@ -33,9 +37,9 @@ const tokenJson: { [key: string]: any } = {
   MISC: { misc_key: 'misc_value' },
 };
 
-const metaJson: { [key: string]: string } = { meta_key: 'meta_value' };
-const treeJson: { [key: number]: any } = { 1: tokenJson };
-const sentenceJson: { [key: string]: any } = { metaJson, treeJson };
+const metaJson: MetaJson = { meta_key: 'meta_value' };
+const treeJson: TreeJson = { 1: tokenJson };
+const sentenceJson: SentenceJson = { metaJson, treeJson };
 
 const metaConll: string = '# meta_key = meta_value';
 const metaConllLines: string[] = metaConll.split('\n');
