@@ -98,3 +98,90 @@ export const sentenceConllToJson = (sentenceConll: string) => {
 
   return sentenceJson;
 };
+
+export const _tabJsonToDict = (featureJson: { [key: string]: string }) => {
+  const splittedFeatureConll = [];
+  for (const featureKey in featureJson) {
+    if (featureJson.hasOwnProperty(featureKey)) {
+      const featureValue = featureJson[featureKey];
+      splittedFeatureConll.push(`${featureKey}=${featureValue}`);
+    } else {
+      throw Error(`featureJson don't possess the key '${featureKey}'`);
+    }
+  }
+  const featureConll = splittedFeatureConll.join('|');
+  return featureConll;
+};
+
+export const _tabDataJsonToConll = (tabData: string | number | { [key: string]: string }, type: string) => {
+  if (type === 'str') {
+    return tabData as string;
+  } else if (type === 'int') {
+    return tabData.toString() as string;
+  } else if (type === 'dict') {
+    return _tabJsonToDict(tabData as { [key: string]: string });
+  } else {
+    throw new Error(`${type} is not a correct type`);
+  }
+};
+
+export const _tokenJsonToLine = (tokenJson: { [key: string]: any }) => {
+  const splittedTokenConll: string[] = [];
+
+  for (const tabIndex in CONLL_STUCTURE) {
+    if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
+      const tabMeta = CONLL_STUCTURE[tabIndex];
+      const tabLabel: string = tabMeta['label'];
+      const tabtype: string = tabMeta['type'];
+
+      const tabDataJson = tokenJson[tabLabel];
+      const tabDataConll = _tabDataJsonToConll(tabDataJson, tabtype);
+      splittedTokenConll.push(tabDataConll);
+    }
+  }
+  const tokenConll = splittedTokenConll.join('\t');
+  return tokenConll;
+};
+
+export const _treeJsonToConll = (treeJson: { [key: number]: any }) => {
+  const treeConllLines: string[] = [];
+
+  for (const tokenIndex in treeJson) {
+    if (treeJson.hasOwnProperty(tokenIndex)) {
+      const tokenJson = treeJson[tokenIndex];
+      const tokenConll = _tokenJsonToLine(tokenJson);
+      treeConllLines.push(tokenConll);
+    } else {
+      throw Error(`treeJson don't possess the key '${tokenIndex}'`);
+    }
+  }
+
+  const treeConll = treeConllLines.join('\n');
+  return treeConll;
+};
+
+export const _metaJsonToConll = (metaJson: { [key: string]: string }) => {
+  const metaConllLines: string[] = [];
+
+  for (const metaKey in metaJson) {
+    if (metaJson.hasOwnProperty(metaKey)) {
+      const metaValue = metaJson[metaKey];
+      const metaConllLine = `# ${metaKey} = ${metaValue}`;
+      metaConllLines.push(metaConllLine);
+    } else {
+      throw Error(`metaJson don't possess the key '${metaKey}'`);
+    }
+  }
+
+  const metaConll = metaConllLines.join('\n');
+
+  return metaConll;
+};
+
+export const sentenceJsonToConll = (sentenceJson: { [key: string]: any }) => {
+  const metaConll = _metaJsonToConll(sentenceJson['metaJson']);
+  const treeConll = _treeJsonToConll(sentenceJson['treeJson']);
+
+  const sentenceConll = `${metaConll}\n${treeConll}`;
+  return sentenceConll;
+};

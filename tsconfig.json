@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
     "target": "es6",
-    "module": "commonjs",
     "declaration": true,
-    "outDir": "./lib",
+    "outDir": "lib",
     "strict": true
   },
   "include": ["src"],

@@ -6,9 +6,16 @@ import {
   _extractTokenTabData,
   _treeConllLinesToJson,
   sentenceConllToJson,
+  _tabJsonToDict,
+  _tabDataJsonToConll,
+  _tokenJsonToLine,
+  _treeJsonToConll,
+  _metaJsonToConll,
+  sentenceJsonToConll
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
+const featureJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
 
 const tokenLine: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
@@ -44,7 +51,7 @@ test('_seperateMetaAndTreeFromSentenceConll', () => {
 });
 
 test('_tabDictToJson', () => {
-  expect(_tabDictToJson(featureConll)).toStrictEqual({ feat_key1: 'feat_value1', feat_key2: 'feat_value2' });
+  expect(_tabDictToJson(featureConll)).toStrictEqual(featureJson);
   expect(_tabDictToJson('_')).toStrictEqual({});
 });
 
@@ -71,3 +78,31 @@ test('_treeConllLinesToJson', () => {
 test('sentenceConllToJson', () => {
   expect(sentenceConllToJson(sentenceConll)).toStrictEqual(sentenceJson);
 });
+
+test('_tabJsonToDict', () => {
+  expect(_tabJsonToDict(featureJson)).toBe(featureConll);
+});
+
+test('_tabDataJsonToConll', () => {
+  expect(_tabDataJsonToConll(3, 'int')).toBe("3");
+  expect(_tabDataJsonToConll('3', 'str')).toBe('3');
+  expect(() => {
+    _tabDataJsonToConll('3', 'fake_type');
+  }).toThrowError('fake_type is not a correct type');
+});
+
+test('_tokenJsonToLine', () => {
+  expect(_tokenJsonToLine(tokenJson)).toStrictEqual(tokenLine);
+});
+
+test('_treeJsonToConll', () => {
+  expect(_treeJsonToConll(treeJson)).toStrictEqual(treeConll);
+});
+
+test('_metaJsonToConll', () => {
+  expect(_metaJsonToConll(metaJson)).toStrictEqual(metaConll);
+});
+
+test('sentenceJsonToConll', ()=> {
+  expect(sentenceJsonToConll(sentenceJson)).toStrictEqual(sentenceConll);
+})
