@@ -29,27 +29,28 @@ export interface SentenceJson {
   metaJson: MetaJson;
 }
 
-const emptyTokenJson = (): TokenJson => ({
+export const emptyFeatureJson = (): FeatureJson => ({});
+
+export const emptyTokenJson = (): TokenJson => ({
   ID: -1,
   FORM: '_',
   LEMMA: '_',
   UPOS: '_',
   XPOS: '_',
-  FEATS: {},
+  FEATS: emptyFeatureJson(),
   HEAD: -1,
   DEPREL: '_',
-  DEPS: {},
-  MISC: {},
+  DEPS: emptyFeatureJson(),
+  MISC: emptyFeatureJson(),
 });
-const emptyFeatureJson = (): FeatureJson => ({});
 
-const emptyMetaJson = (): MetaJson => ({});
+export const emptyMetaJson = (): MetaJson => ({});
 
-const emptyTreeJson = (): TreeJson => ({});
+export const emptyTreeJson = (): TreeJson => ({});
 
-const emptySentenceJson = (): SentenceJson => ({
-  metaJson: {},
-  treeJson: {},
+export const emptySentenceJson = (): SentenceJson => ({
+  metaJson: emptyMetaJson(),
+  treeJson: emptyTreeJson(),
 });
 
 const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {

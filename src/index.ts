@@ -1,6 +1,10 @@
-import { sentenceConllToJson, sentenceJsonToConll } from './conll';
+import {
+  sentenceConllToJson,
+  sentenceJsonToConll,
+} from './conll';
 
 export default {
   sentenceConllToJson,
-  sentenceJsonToConll
+  sentenceJsonToConll,
 };
+
