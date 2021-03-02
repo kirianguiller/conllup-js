@@ -15,7 +15,7 @@ import {
   MetaJson,
   TreeJson,
   SentenceJson,
-  TokenJson
+  TokenJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -88,7 +88,7 @@ test('_tabJsonToDict', () => {
 });
 
 test('_tabDataJsonToConll', () => {
-  expect(_tabDataJsonToConll(3, 'int')).toBe("3");
+  expect(_tabDataJsonToConll(3, 'int')).toBe('3');
   expect(_tabDataJsonToConll('3', 'str')).toBe('3');
   expect(() => {
     _tabDataJsonToConll('3', 'fake_type');
@@ -107,6 +107,6 @@ test('_metaJsonToConll', () => {
   expect(_metaJsonToConll(metaJson)).toStrictEqual(metaConll);
 });
 
-test('sentenceJsonToConll', ()=> {
+test('sentenceJsonToConll', () => {
   expect(sentenceJsonToConll(sentenceJson)).toStrictEqual(sentenceConll);
-})
+});
