@@ -66,6 +66,10 @@ const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
   9: { label: 'MISC', type: 'dict' },
 };
 
+function is_numeric(str: string): boolean {
+  return /^\d+$/.test(str);
+}
+
 export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => {
   const trimmedSentenceConll = sentenceConll.trim();
   const lineConlls = trimmedSentenceConll.split('\n');
@@ -73,10 +77,13 @@ export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => 
   const metaLines: string[] = [];
   const treeLines: string[] = [];
   for (const lineConll of lineConlls) {
-    if (lineConll.startsWith('#')) {
-      metaLines.push(lineConll);
+    const trimmedLineConll = lineConll.trim()
+    if (trimmedLineConll.startsWith('#')) {
+      metaLines.push(trimmedLineConll);
+    } else if (!is_numeric(trimmedLineConll.slice(0, 1))) {
+      console.log(`Warning: line didnt't start with a digit or '#' : "${trimmedLineConll}" `)
     } else {
-      treeLines.push(lineConll);
+      treeLines.push(trimmedLineConll);
     }
   }
   return { metaLines, treeLines };

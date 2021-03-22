@@ -46,10 +46,18 @@ const metaConllLines: string[] = metaConll.split('\n');
 const treeConll: string = `${tokenLine}`;
 const treeConllLines: string[] = treeConll.split('\n');
 const sentenceConll: string = `${metaConll}\n${treeConll}`;
+const untrimmedMetaConll: string = '# meta_key = meta_value\n       # meta_key2 = meta_value2';
+const untrimmedMetaConllLines: string[] = metaConll.split('\n');
+const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
+
 
 test('_seperateMetaAndTreeFromSentenceConll', () => {
   expect(_seperateMetaAndTreeFromSentenceConll(sentenceConll)).toStrictEqual({
     metaLines: metaConllLines,
+    treeLines: treeConllLines,
+  });
+  expect(_seperateMetaAndTreeFromSentenceConll(untrimmedSentenceConll)).toStrictEqual({
+    metaLines: untrimmedMetaConllLines,
     treeLines: treeConllLines,
   });
 });
