@@ -37,11 +37,11 @@ const tokenJson: TokenJson = {
   MISC: { misc_key: 'misc_value' },
 };
 
-const metaJson: MetaJson = { meta_key: 'meta_value' };
+const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
 const treeJson: TreeJson = { 1: tokenJson };
 const sentenceJson: SentenceJson = { metaJson, treeJson };
 
-const metaConll: string = '# meta_key = meta_value';
+const metaConll: string = '# meta_key = meta_value\n# meta_key2 = meta_value2';
 const metaConllLines: string[] = metaConll.split('\n');
 const treeConll: string = `${tokenLine}`;
 const treeConllLines: string[] = treeConll.split('\n');
@@ -60,7 +60,7 @@ test('_tabDictToJson', () => {
 });
 
 test('_metaConllLinesToJson', () => {
-  expect(_metaConllLinesToJson(metaConllLines)).toStrictEqual({ meta_key: 'meta_value' });
+  expect(_metaConllLinesToJson(metaConllLines)).toStrictEqual(metaJson);
 });
 
 test('_extractTokenTabData', () => {
