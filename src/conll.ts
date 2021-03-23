@@ -77,11 +77,12 @@ export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => 
   const metaLines: string[] = [];
   const treeLines: string[] = [];
   for (const lineConll of lineConlls) {
-    const trimmedLineConll = lineConll.trim()
+    const trimmedLineConll = lineConll.trim();
     if (trimmedLineConll.startsWith('#')) {
       metaLines.push(trimmedLineConll);
     } else if (!is_numeric(trimmedLineConll.slice(0, 1))) {
-      console.log(`Warning: line didnt't start with a digit or '#' : "${trimmedLineConll}" `)
+      // tslint:disable-next-line: no-console
+      console.log(`Warning: line didnt't start with a digit or '#' : "${trimmedLineConll}" `);
     } else {
       treeLines.push(trimmedLineConll);
     }

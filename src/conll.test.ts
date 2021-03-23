@@ -50,7 +50,6 @@ const untrimmedMetaConll: string = '# meta_key = meta_value\n       # meta_key2 
 const untrimmedMetaConllLines: string[] = metaConll.split('\n');
 const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 
-
 test('_seperateMetaAndTreeFromSentenceConll', () => {
   expect(_seperateMetaAndTreeFromSentenceConll(sentenceConll)).toStrictEqual({
     metaLines: metaConllLines,
