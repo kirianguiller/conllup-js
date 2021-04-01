@@ -113,6 +113,10 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
 };
 
 export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
+  if (["-", "–"].includes(tokenTabData)) {
+    tokenTabData = "_"
+  }
+  
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {

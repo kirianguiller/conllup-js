@@ -50,6 +50,20 @@ const untrimmedMetaConll: string = '# meta_key = meta_value\n       # meta_key2 
 const untrimmedMetaConllLines: string[] = metaConll.split('\n');
 const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 
+const hyphenInsteadOfUnderscoreLineConll: string = "1	form	lemma	upos	–	–	0	deprel	_	_"
+const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
+  ID: 1,
+  FORM: 'form',
+  LEMMA: 'lemma',
+  UPOS: 'upos',
+  XPOS: '_',
+  FEATS: {  },
+  HEAD: 0,
+  DEPREL: 'deprel',
+  DEPS: {  },
+  MISC: {  },
+};
+
 test('_seperateMetaAndTreeFromSentenceConll', () => {
   expect(_seperateMetaAndTreeFromSentenceConll(sentenceConll)).toStrictEqual({
     metaLines: metaConllLines,
@@ -80,6 +94,7 @@ test('_extractTokenTabData', () => {
 
 test('_tokenLineToJson', () => {
   expect(_tokenLineToJson(tokenLine)).toStrictEqual(tokenJson);
+  expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson)
 });
 
 test('_treeConllLinesToJson', () => {
