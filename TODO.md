@@ -21,3 +21,6 @@ exemple :
 14	de	de	ADP	_	_	13	udep	_	Gloss=of
 15	le	le	DET	_	_	16	det	_	Gloss=the
 16	SHIELD	SHIELD	PROPN	_	_	14	comp:obj	_	Gloss=shield
+
+
+# handle empty features (should become a "_" tag)

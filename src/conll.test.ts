@@ -51,6 +51,7 @@ const untrimmedMetaConllLines: string[] = metaConll.split('\n');
 const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 
 const hyphenInsteadOfUnderscoreLineConll: string = "1	form	lemma	upos	–	–	0	deprel	_	_"
+const hyphenInsteadOfUnderscoreLineConllCorrected: string = "1	form	lemma	upos	_	_	0	deprel	_	_"
 const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
   ID: 1,
   FORM: 'form',
@@ -107,6 +108,7 @@ test('sentenceConllToJson', () => {
 
 test('_tabJsonToDict', () => {
   expect(_tabJsonToDict(featureJson)).toBe(featureConll);
+  expect(_tabJsonToDict({})).toBe("_");
 });
 
 test('_tabDataJsonToConll', () => {
@@ -119,6 +121,7 @@ test('_tabDataJsonToConll', () => {
 
 test('_tokenJsonToLine', () => {
   expect(_tokenJsonToLine(tokenJson)).toStrictEqual(tokenLine);
+  expect(_tokenJsonToLine(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(hyphenInsteadOfUnderscoreLineConllCorrected);
 });
 
 test('_treeJsonToConll', () => {

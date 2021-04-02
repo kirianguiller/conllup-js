@@ -176,7 +176,10 @@ export const _tabJsonToDict = (featureJson: FeatureJson): string => {
       throw Error(`featureJson don't possess the key '${featureKey}'`);
     }
   }
-  const featureConll = splittedFeatureConll.join('|');
+  let featureConll = splittedFeatureConll.join('|');
+  if (featureConll ==="") {
+    featureConll = "_"
+  }
   return featureConll;
 };
 
