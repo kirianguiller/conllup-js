@@ -3,7 +3,7 @@ export interface FeatureJson {
 }
 
 export interface TokenJson {
-  ID: number;
+  ID: string;
   FORM: string;
   LEMMA: string;
   UPOS: string;
@@ -13,11 +13,12 @@ export interface TokenJson {
   DEPREL: string;
   DEPS: FeatureJson;
   MISC: FeatureJson;
-  [key: string]: string | number | FeatureJson;
+  isGroup: boolean;
+  [key: string]: string | number | FeatureJson | boolean;
 }
 
 export interface TreeJson {
-  [key: number]: TokenJson;
+  [key: string]: TokenJson;
 }
 
 export interface MetaJson {
@@ -32,7 +33,7 @@ export interface SentenceJson {
 export const emptyFeatureJson = (): FeatureJson => ({});
 
 export const emptyTokenJson = (): TokenJson => ({
-  ID: -1,
+  ID: '_',
   FORM: '_',
   LEMMA: '_',
   UPOS: '_',
@@ -42,6 +43,7 @@ export const emptyTokenJson = (): TokenJson => ({
   DEPREL: '_',
   DEPS: emptyFeatureJson(),
   MISC: emptyFeatureJson(),
+  isGroup: false,
 });
 
 export const emptyMetaJson = (): MetaJson => ({});
@@ -54,7 +56,7 @@ export const emptySentenceJson = (): SentenceJson => ({
 });
 
 const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
-  0: { label: 'ID', type: 'int' },
+  0: { label: 'ID', type: 'str' },
   1: { label: 'FORM', type: 'str' },
   2: { label: 'LEMMA', type: 'str' },
   3: { label: 'UPOS', type: 'str' },
@@ -66,7 +68,7 @@ const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
   9: { label: 'MISC', type: 'dict' },
 };
 
-function is_numeric(str: string): boolean {
+function isNumeric(str: string): boolean {
   return /^\d+$/.test(str);
 }
 
@@ -80,7 +82,7 @@ export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => 
     const trimmedLineConll = lineConll.trim();
     if (trimmedLineConll.startsWith('#')) {
       metaLines.push(trimmedLineConll);
-    } else if (!is_numeric(trimmedLineConll.slice(0, 1))) {
+    } else if (!isNumeric(trimmedLineConll.slice(0, 1))) {
       // tslint:disable-next-line: no-console
       console.log(`Warning: line didnt't start with a digit or '#' : "${trimmedLineConll}" `);
     } else {
@@ -113,14 +115,18 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
 };
 
 export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
-  if (["-", "–"].includes(tokenTabData)) {
-    tokenTabData = "_"
+  if (['-', '–'].includes(tokenTabData)) {
+    tokenTabData = '_';
   }
-  
+
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
-    return parseInt(tokenTabData, 10);
+    if (tokenTabData === '_') {
+      return -1;
+    } else {
+      return parseInt(tokenTabData, 10);
+    }
   } else if (type === 'dict') {
     return _tabDictToJson(tokenTabData);
   } else {
@@ -143,6 +149,11 @@ export const _tokenLineToJson = (tokenLine: string): TokenJson => {
       tokenJson[label] = _extractTokenTabData(tabData, type);
     }
   }
+
+  // add the meta information about if token is a group or not
+  if (tokenJson.ID.indexOf('-') > -1) {
+    tokenJson.isGroup = true;
+  }
   return tokenJson;
 };
 
@@ -151,7 +162,8 @@ export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
 
   let tokenIndex: number = 1;
   for (const tokenLine of treeConllLines) {
-    treeJson[tokenIndex] = _tokenLineToJson(tokenLine);
+    const tokenJson = _tokenLineToJson(tokenLine);
+    treeJson[tokenJson.ID] = tokenJson;
     tokenIndex = tokenIndex + 1;
   }
   return treeJson;
@@ -177,8 +189,8 @@ export const _tabJsonToDict = (featureJson: FeatureJson): string => {
     }
   }
   let featureConll = splittedFeatureConll.join('|');
-  if (featureConll ==="") {
-    featureConll = "_"
+  if (featureConll === '') {
+    featureConll = '_';
   }
   return featureConll;
 };
@@ -187,7 +199,11 @@ export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type
   if (type === 'str') {
     return tabData as string;
   } else if (type === 'int') {
-    return tabData.toString() as string;
+    if (tabData === -1) {
+      return '_';
+    } else {
+      return tabData.toString() as string;
+    }
   } else if (type === 'dict') {
     return _tabJsonToDict(tabData as FeatureJson);
   } else {
@@ -204,7 +220,7 @@ export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
       const tabLabel: string = tabMeta['label'];
       const tabtype: string = tabMeta['type'];
 
-      const tabDataJson = tokenJson[tabLabel];
+      const tabDataJson = tokenJson[tabLabel] as string | number | FeatureJson;
       const tabDataConll = _tabDataJsonToConll(tabDataJson, tabtype);
       splittedTokenConll.push(tabDataConll);
     }
@@ -215,15 +231,14 @@ export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
 
 export const _treeJsonToConll = (treeJson: TreeJson): string => {
   const treeConllLines: string[] = [];
-
-  for (const tokenIndex in treeJson) {
-    if (treeJson.hasOwnProperty(tokenIndex)) {
-      const tokenJson = treeJson[tokenIndex];
-      const tokenConll = _tokenJsonToLine(tokenJson);
-      treeConllLines.push(tokenConll);
-    } else {
-      throw Error(`treeJson don't possess the key '${tokenIndex}'`);
-    }
+  const tokenIndexes = Object.values(treeJson).map((tokenJson) => {
+    return tokenJson.ID;
+  });
+  const sortedTokenIndexes = _sortTokenIndexes(tokenIndexes);
+  for (const tokenIndex of sortedTokenIndexes) {
+    const tokenJson = treeJson[tokenIndex];
+    const tokenConll = _tokenJsonToLine(tokenJson);
+    treeConllLines.push(tokenConll);
   }
 
   const treeConll = treeConllLines.join('\n');
@@ -255,3 +270,17 @@ export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
   const sentenceConll = `${metaConll}\n${treeConll}`;
   return sentenceConll;
 };
+
+export function _sortTokenIndexes(tokenIndexes: string[]): string[] {
+  return tokenIndexes.sort(_compareTokenIndexes);
+}
+
+export function _compareTokenIndexes(a: string, b: string): number {
+  const a1 = parseInt(a.split('-')[0], 10);
+  const b1 = parseInt(b.split('-')[0], 10);
+  if (a1 - b1 !== 0) {
+    return a1 - b1;
+  } else {
+    return b.length - a.length;
+  }
+}

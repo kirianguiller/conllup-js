@@ -11,6 +11,7 @@ import {
   _tokenJsonToLine,
   _treeJsonToConll,
   _metaJsonToConll,
+  _compareTokenIndexes,
   sentenceJsonToConll,
   MetaJson,
   TreeJson,
@@ -25,7 +26,7 @@ const tokenLine: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
 
 const tokenJson: TokenJson = {
-  ID: 1,
+  ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
   UPOS: 'upos',
@@ -35,6 +36,7 @@ const tokenJson: TokenJson = {
   DEPREL: 'deprel',
   DEPS: { dep_key: 'dep_value' },
   MISC: { misc_key: 'misc_value' },
+  isGroup: false,
 };
 
 const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
@@ -50,19 +52,41 @@ const untrimmedMetaConll: string = '# meta_key = meta_value\n       # meta_key2 
 const untrimmedMetaConllLines: string[] = metaConll.split('\n');
 const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 
-const hyphenInsteadOfUnderscoreLineConll: string = "1	form	lemma	upos	–	–	0	deprel	_	_"
-const hyphenInsteadOfUnderscoreLineConllCorrected: string = "1	form	lemma	upos	_	_	0	deprel	_	_"
+// checks for hyphen instead of undescore
+const hyphenInsteadOfUnderscoreLineConll: string = '1	form	lemma	upos	–	–	0	deprel	_	_';
+const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
 const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
-  ID: 1,
+  ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
   UPOS: 'upos',
   XPOS: '_',
-  FEATS: {  },
+  FEATS: {},
   HEAD: 0,
   DEPREL: 'deprel',
-  DEPS: {  },
-  MISC: {  },
+  DEPS: {},
+  MISC: {},
+  isGroup: false,
+};
+
+// check for group token, for exemple :
+// 1-2  it's  _ _ _ _ _ _ _
+// 1    it  it  _ _ _ _ _ _ _
+// 2    's  's  _ _ _ _ _ _ _
+const groupTokenLine: string = "1-2	it's	it's	upos	_	_	_	deprel	_	_";
+
+const groupTokenJson: TokenJson = {
+  ID: '1-2',
+  FORM: "it's",
+  LEMMA: "it's",
+  UPOS: 'upos',
+  XPOS: '_',
+  FEATS: {},
+  HEAD: -1,
+  DEPREL: 'deprel',
+  DEPS: {},
+  MISC: {},
+  isGroup: true,
 };
 
 test('_seperateMetaAndTreeFromSentenceConll', () => {
@@ -95,7 +119,8 @@ test('_extractTokenTabData', () => {
 
 test('_tokenLineToJson', () => {
   expect(_tokenLineToJson(tokenLine)).toStrictEqual(tokenJson);
-  expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson)
+  expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
+  expect(_tokenLineToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
 });
 
 test('_treeConllLinesToJson', () => {
@@ -108,7 +133,7 @@ test('sentenceConllToJson', () => {
 
 test('_tabJsonToDict', () => {
   expect(_tabJsonToDict(featureJson)).toBe(featureConll);
-  expect(_tabJsonToDict({})).toBe("_");
+  expect(_tabJsonToDict({})).toBe('_');
 });
 
 test('_tabDataJsonToConll', () => {
@@ -121,7 +146,9 @@ test('_tabDataJsonToConll', () => {
 
 test('_tokenJsonToLine', () => {
   expect(_tokenJsonToLine(tokenJson)).toStrictEqual(tokenLine);
-  expect(_tokenJsonToLine(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(hyphenInsteadOfUnderscoreLineConllCorrected);
+  expect(_tokenJsonToLine(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(
+    hyphenInsteadOfUnderscoreLineConllCorrected,
+  );
 });
 
 test('_treeJsonToConll', () => {
@@ -134,4 +161,11 @@ test('_metaJsonToConll', () => {
 
 test('sentenceJsonToConll', () => {
   expect(sentenceJsonToConll(sentenceJson)).toStrictEqual(sentenceConll);
+});
+
+test('compareTokenIndexes', () => {
+  expect(_compareTokenIndexes('1', '2')).toStrictEqual(-1);
+  expect(_compareTokenIndexes('1', '3')).toStrictEqual(-2);
+  expect(_compareTokenIndexes('10', '5')).toStrictEqual(5);
+  expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
 });
