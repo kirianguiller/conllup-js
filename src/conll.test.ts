@@ -171,9 +171,8 @@ test('_compareTokenIndexes', () => {
   expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
 });
 
-
 const treeJsonToBeReplaceArray: TreeJson = {
-  "1-2": {
+  '1-2': {
     ID: '1-2',
     FORM: 'I eat',
     LEMMA: '_',
@@ -186,7 +185,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "1": {
+  '1': {
     ID: '1',
     FORM: 'I',
     LEMMA: '_',
@@ -199,7 +198,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "2": {
+  '2': {
     ID: '2',
     FORM: 'eat',
     LEMMA: '_',
@@ -212,7 +211,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "2-4": {
+  '2-4': {
     ID: '2-4',
     FORM: 'eat an apple',
     LEMMA: '_',
@@ -225,7 +224,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "3": {
+  '3': {
     ID: '3',
     FORM: 'an',
     LEMMA: '_',
@@ -238,7 +237,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "3-4": {
+  '3-4': {
     ID: '3-4',
     FORM: 'an apple',
     LEMMA: '_',
@@ -251,7 +250,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "4": {
+  '4': {
     ID: '4',
     FORM: 'apple',
     LEMMA: '_',
@@ -263,11 +262,11 @@ const treeJsonToBeReplaceArray: TreeJson = {
     DEPS: {},
     MISC: {},
     isGroup: false,
-  }
-}
+  },
+};
 
 const treeJsonReplacedArray: TreeJson = {
-  "1-2": {
+  '1-2': {
     ID: '1-2',
     FORM: 'I eat',
     LEMMA: '_',
@@ -280,7 +279,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "1": {
+  '1': {
     ID: '1',
     FORM: 'I',
     LEMMA: '_',
@@ -293,7 +292,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "2": {
+  '2': {
     ID: '2',
     FORM: 'eat',
     LEMMA: '_',
@@ -306,7 +305,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "2-5": {
+  '2-5': {
     ID: '2-5',
     FORM: 'eat an apple',
     LEMMA: '_',
@@ -319,7 +318,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "3-4": {
+  '3-4': {
     ID: '3-4',
     FORM: 'an apple',
     LEMMA: '_',
@@ -332,7 +331,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: true,
   },
-  "3": {
+  '3': {
     ID: '3',
     FORM: 'a',
     LEMMA: '_',
@@ -345,7 +344,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "4": {
+  '4': {
     ID: '4',
     FORM: 'red',
     LEMMA: '_',
@@ -358,7 +357,7 @@ const treeJsonReplacedArray: TreeJson = {
     MISC: {},
     isGroup: false,
   },
-  "5": {
+  '5': {
     ID: '5',
     FORM: 'apple',
     LEMMA: '_',
@@ -370,9 +369,9 @@ const treeJsonReplacedArray: TreeJson = {
     DEPS: {},
     MISC: {},
     isGroup: false,
-  }
-}
+  },
+};
 
 test('replaceArrayOfTokens', () => {
-  expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ["a", "red"])).toStrictEqual(treeJsonReplacedArray);
+  expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
 });

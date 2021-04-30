@@ -273,7 +273,7 @@ export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
 
 export const _sortTokenIndexes = (tokenIndexes: string[]): string[] => {
   return tokenIndexes.sort(_compareTokenIndexes);
-}
+};
 
 export const _compareTokenIndexes = (a: string, b: string): number => {
   const a1 = parseInt(a.split('-')[0], 10);
@@ -283,31 +283,35 @@ export const _compareTokenIndexes = (a: string, b: string): number => {
   } else {
     return b.length - a.length;
   }
-}
+};
 
-export const replaceArrayOfTokens = (treeJson: TreeJson, oldTokensIndexes: number[], newTokensForms: string[]): TreeJson => {
-  let newTreeJson = emptyTreeJson()
+export const replaceArrayOfTokens = (
+  treeJson: TreeJson,
+  oldTokensIndexes: number[],
+  newTokensForms: string[],
+): TreeJson => {
+  const newTreeJson = emptyTreeJson();
 
   // add new tokens to new tree
-  let newTokenIndex = oldTokensIndexes[0]
+  let newTokenIndex = oldTokensIndexes[0];
   for (const newTokenForm of newTokensForms) {
-    let newTokenJson = emptyTokenJson();
+    const newTokenJson = emptyTokenJson();
     newTokenJson.ID = newTokenIndex.toString();
-    newTokenJson.FORM = newTokenForm
-    newTreeJson[newTokenJson.ID] = newTokenJson
+    newTokenJson.FORM = newTokenForm;
+    newTreeJson[newTokenJson.ID] = newTokenJson;
     newTokenIndex++;
   }
 
   // add old tokens with modified index if necessary
-  const differenceInSize = newTokensForms.length - oldTokensIndexes.length
-  const arrayFirst = oldTokensIndexes[0]
-  const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1]
+  const differenceInSize = newTokensForms.length - oldTokensIndexes.length;
+  const arrayFirst = oldTokensIndexes[0];
+  const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1];
   for (const oldTokenJson of Object.values(treeJson)) {
-    const oldTokenJsonCopy: TokenJson = JSON.parse(JSON.stringify(oldTokenJson))
-    
-    const newTokenJson = incrementIndexesOfToken(oldTokenJsonCopy, arrayFirst, arrayLast, differenceInSize)
-    if (newTokenJson.ID != "-1") {
-      newTreeJson[newTokenJson.ID] = newTokenJson
+    const oldTokenJsonCopy: TokenJson = JSON.parse(JSON.stringify(oldTokenJson));
+
+    const newTokenJson = incrementIndexesOfToken(oldTokenJsonCopy, arrayFirst, arrayLast, differenceInSize);
+    if (newTokenJson.ID !== '-1') {
+      newTreeJson[newTokenJson.ID] = newTokenJson;
     }
     // if (oldTokenJsonCopy.isGroup) {
     //   // TODO : handle this
@@ -323,42 +327,51 @@ export const replaceArrayOfTokens = (treeJson: TreeJson, oldTokensIndexes: numbe
     // console.log("KK ", newTreeJson)
   }
 
-  return newTreeJson
-}
+  return newTreeJson;
+};
 
-
-export const incrementIndexesOfToken = (tokenJson: TokenJson, arrayFirst: number, arrayLast: number, differenceInSize: number): TokenJson => {
+export const incrementIndexesOfToken = (
+  tokenJson: TokenJson,
+  arrayFirst: number,
+  arrayLast: number,
+  differenceInSize: number,
+): TokenJson => {
   // handle ID
   if (tokenJson.isGroup) {
-    const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split("-")
-    const newTokenJsonId1 = incrementIndex(parseInt(tokenJsonId1), arrayFirst, arrayLast, differenceInSize)
-    const newTokenJsonId2 = incrementIndex(parseInt(tokenJsonId2), arrayFirst, arrayLast, differenceInSize)
-    if (newTokenJsonId1 != -1 && newTokenJsonId2 != -1) {
-      tokenJson.ID = `${newTokenJsonId1}-${newTokenJsonId2}`
+    const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split('-');
+    const newTokenJsonId1 = incrementIndex(parseInt(tokenJsonId1, 10), arrayFirst, arrayLast, differenceInSize);
+    const newTokenJsonId2 = incrementIndex(parseInt(tokenJsonId2, 10), arrayFirst, arrayLast, differenceInSize);
+    if (newTokenJsonId1 !== -1 && newTokenJsonId2 !== -1) {
+      tokenJson.ID = `${newTokenJsonId1}-${newTokenJsonId2}`;
     }
   } else {
-    const tokenJsonId = tokenJson.ID
-    const newTokenJsonId = incrementIndex(parseInt(tokenJsonId), arrayFirst, arrayLast, differenceInSize)
-    tokenJson.ID = newTokenJsonId.toString()
+    const tokenJsonId = tokenJson.ID;
+    const newTokenJsonId = incrementIndex(parseInt(tokenJsonId, 10), arrayFirst, arrayLast, differenceInSize);
+    tokenJson.ID = newTokenJsonId.toString();
   }
 
   // handle HEAD
-  const tokenJsonHead = tokenJson.HEAD
-  if (tokenJsonHead!= -1) {
-    const newTokenJsonHead = incrementIndex(tokenJsonHead, arrayFirst, arrayLast, differenceInSize)
-    tokenJson.HEAD = newTokenJsonHead
+  const tokenJsonHead = tokenJson.HEAD;
+  if (tokenJsonHead !== -1) {
+    const newTokenJsonHead = incrementIndex(tokenJsonHead, arrayFirst, arrayLast, differenceInSize);
+    tokenJson.HEAD = newTokenJsonHead;
   }
 
-  return tokenJson
-}
+  return tokenJson;
+};
 
 // Worry : can it return 0 ?
-export const incrementIndex = (index: number, arrayFirst: number, arrayLast: number, differenceInSize: number): number => {
+export const incrementIndex = (
+  index: number,
+  arrayFirst: number,
+  arrayLast: number,
+  differenceInSize: number,
+): number => {
   if (index < arrayFirst) {
-    return index
+    return index;
   } else if (index > arrayLast) {
-    return index + differenceInSize
+    return index + differenceInSize;
   } else {
-    return -1
+    return -1;
   }
-}
+};
