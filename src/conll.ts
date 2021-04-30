@@ -271,11 +271,11 @@ export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
   return sentenceConll;
 };
 
-export function _sortTokenIndexes(tokenIndexes: string[]): string[] {
+export const _sortTokenIndexes = (tokenIndexes: string[]): string[] => {
   return tokenIndexes.sort(_compareTokenIndexes);
 }
 
-export function _compareTokenIndexes(a: string, b: string): number {
+export const _compareTokenIndexes = (a: string, b: string): number => {
   const a1 = parseInt(a.split('-')[0], 10);
   const b1 = parseInt(b.split('-')[0], 10);
   if (a1 - b1 !== 0) {
