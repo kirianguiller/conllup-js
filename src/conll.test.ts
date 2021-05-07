@@ -70,6 +70,23 @@ const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
   isGroup: false,
 };
 
+// checks for "=" symbol is misc or feature field
+const equalSymbolInMiscOrFeatureTokenLine: string = '1	form	lemma	upos	_	person=first=second	_	_	_	_';
+// const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
+const equalSymbolInMiscOrFeatureTokenJson: TokenJson = {
+  ID: '1',
+  FORM: 'form',
+  LEMMA: 'lemma',
+  UPOS: 'upos',
+  XPOS: '_',
+  FEATS: { person: 'first=second' },
+  HEAD: -1,
+  DEPREL: '_',
+  DEPS: {},
+  MISC: {},
+  isGroup: false,
+};
+
 // check for group token, for exemple :
 // 1-2  it's  _ _ _ _ _ _ _
 // 1    it  it  _ _ _ _ _ _ _
@@ -121,6 +138,7 @@ test('_extractTokenTabData', () => {
 test('_tokenLineToJson', () => {
   expect(_tokenLineToJson(tokenLine)).toStrictEqual(tokenJson);
   expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
+  expect(_tokenLineToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
   expect(_tokenLineToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
 });
 
@@ -227,8 +245,8 @@ const treeJsonToBeReplaceArray: TreeJson = {
   '3': {
     ID: '3',
     FORM: 'an',
-    LEMMA: '_',
-    UPOS: '_',
+    LEMMA: 'lemma',
+    UPOS: 'upos',
     XPOS: '_',
     FEATS: {},
     HEAD: 4,

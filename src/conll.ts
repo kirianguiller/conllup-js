@@ -108,7 +108,9 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
   }
   const splittedFeaturesConll: string[] = featureConll.split('|');
   for (const featureCouple of splittedFeaturesConll) {
-    const [featureKey, featureValue] = featureCouple.split('=');
+    const splittedFeature = featureCouple.split('=');
+    const featureKey = splittedFeature[0];
+    const featureValue = splittedFeature.slice(1).join('=');
     featureJson[featureKey] = featureValue;
   }
   return featureJson;
