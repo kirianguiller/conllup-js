@@ -116,11 +116,13 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
   return featureJson;
 };
 
+const _normalizeNull = (tokenTabData: string, tabMeta: { [key: string]: string }): string => {
+  if (['-', '–'].includes(tokenTabData))
+    return '_';
+  else
+    return tokenTabData;
+}
 export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
-  if (['-', '–'].includes(tokenTabData)) {
-    tokenTabData = '_';
-  }
-
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
@@ -144,7 +146,7 @@ export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   for (const tabIndex in CONLL_STRUCTURE) {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STRUCTURE[tabIndex];
-      const tabData = splittedTokenLine[tabIndex];
+      const tabData = _normalizeNull(splittedTokenLine[tabIndex], tabMeta);
 
       const label: string = tabMeta['label'];
       const type: string = tabMeta['type'];
