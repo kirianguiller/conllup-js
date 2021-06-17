@@ -70,6 +70,23 @@ const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
   isGroup: false,
 };
 
+// exclude FORM and LEMMA from hyphen-to-underscore replacement
+// (there could be a literal hyphen in the text!)
+const preserveHyphenInFormLemmaLineConll: string = '1	-	–	upos	_	_	0	deprel	_	_';
+const preserveHyphenInFormLemmaLineJson: TokenJson = {
+  ID: '1',
+  FORM: '-',
+  LEMMA: '–',
+  UPOS: 'upos',
+  XPOS: '_',
+  FEATS: {},
+  HEAD: 0,
+  DEPREL: 'deprel',
+  DEPS: {},
+  MISC: {},
+  isGroup: false,
+};
+
 // checks for "=" symbol is misc or feature field
 const equalSymbolInMiscOrFeatureTokenLine: string = '1	form	lemma	upos	_	person=first=second	_	_	_	_';
 // const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
@@ -138,6 +155,7 @@ test('_extractTokenTabData', () => {
 test('_tokenLineToJson', () => {
   expect(_tokenLineToJson(tokenLine)).toStrictEqual(tokenJson);
   expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
+  expect(_tokenLineToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
   expect(_tokenLineToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
   expect(_tokenLineToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
 });

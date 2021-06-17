@@ -117,7 +117,9 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
 };
 
 const _normalizeNull = (tokenTabData: string, tabMeta: { [key: string]: string }): string => {
-  if (['-', '–'].includes(tokenTabData))
+  if (["FORM", "LEMMA"].includes(tabMeta['label']))
+    return tokenTabData;
+  else if (['-', '–'].includes(tokenTabData))
     return '_';
   else
     return tokenTabData;
