@@ -55,7 +55,7 @@ export const emptySentenceJson = (): SentenceJson => ({
   treeJson: emptyTreeJson(),
 });
 
-const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
+const CONLL_STRUCTURE: { [key: number]: { [key: string]: string } } = {
   0: { label: 'ID', type: 'str' },
   1: { label: 'FORM', type: 'str' },
   2: { label: 'LEMMA', type: 'str' },
@@ -141,9 +141,9 @@ export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
 
   const tokenJson: TokenJson = emptyTokenJson();
-  for (const tabIndex in CONLL_STUCTURE) {
-    if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
-      const tabMeta = CONLL_STUCTURE[tabIndex];
+  for (const tabIndex in CONLL_STRUCTURE) {
+    if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
+      const tabMeta = CONLL_STRUCTURE[tabIndex];
       const tabData = splittedTokenLine[tabIndex];
 
       const label: string = tabMeta['label'];
@@ -216,9 +216,9 @@ export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type
 export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
   const splittedTokenConll: string[] = [];
 
-  for (const tabIndex in CONLL_STUCTURE) {
-    if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
-      const tabMeta = CONLL_STUCTURE[tabIndex];
+  for (const tabIndex in CONLL_STRUCTURE) {
+    if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
+      const tabMeta = CONLL_STRUCTURE[tabIndex];
       const tabLabel: string = tabMeta['label'];
       const tabtype: string = tabMeta['type'];
 
