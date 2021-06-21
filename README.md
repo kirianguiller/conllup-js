@@ -9,6 +9,10 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+### 1.1.4
+- Fix aggressive normalization of hyphens in FORM and LEMMA
+
+
 ### 1.1.0
 - Support for group token
 ```tsv
