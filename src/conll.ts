@@ -55,7 +55,7 @@ export const emptySentenceJson = (): SentenceJson => ({
   treeJson: emptyTreeJson(),
 });
 
-const CONLL_STUCTURE: { [key: number]: { [key: string]: string } } = {
+const CONLL_STRUCTURE: { [key: number]: { [key: string]: string } } = {
   0: { label: 'ID', type: 'str' },
   1: { label: 'FORM', type: 'str' },
   2: { label: 'LEMMA', type: 'str' },
@@ -116,11 +116,15 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
   return featureJson;
 };
 
+const _normalizeNull = (tokenTabData: string, tabMeta: { [key: string]: string }): string => {
+  if (["FORM", "LEMMA"].includes(tabMeta['label']))
+    return tokenTabData;
+  else if (['-', '–'].includes(tokenTabData))
+    return '_';
+  else
+    return tokenTabData;
+}
 export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
-  if (['-', '–'].includes(tokenTabData)) {
-    tokenTabData = '_';
-  }
-
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
@@ -141,10 +145,10 @@ export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
 
   const tokenJson: TokenJson = emptyTokenJson();
-  for (const tabIndex in CONLL_STUCTURE) {
-    if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
-      const tabMeta = CONLL_STUCTURE[tabIndex];
-      const tabData = splittedTokenLine[tabIndex];
+  for (const tabIndex in CONLL_STRUCTURE) {
+    if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
+      const tabMeta = CONLL_STRUCTURE[tabIndex];
+      const tabData = _normalizeNull(splittedTokenLine[tabIndex], tabMeta);
 
       const label: string = tabMeta['label'];
       const type: string = tabMeta['type'];
@@ -216,9 +220,9 @@ export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type
 export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
   const splittedTokenConll: string[] = [];
 
-  for (const tabIndex in CONLL_STUCTURE) {
-    if (CONLL_STUCTURE.hasOwnProperty(tabIndex)) {
-      const tabMeta = CONLL_STUCTURE[tabIndex];
+  for (const tabIndex in CONLL_STRUCTURE) {
+    if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
+      const tabMeta = CONLL_STRUCTURE[tabIndex];
       const tabLabel: string = tabMeta['label'];
       const tabtype: string = tabMeta['type'];
 
