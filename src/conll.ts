@@ -117,13 +117,10 @@ export const _tabDictToJson = (featureConll: string): FeatureJson => {
 };
 
 const _normalizeNull = (tokenTabData: string, tabMeta: { [key: string]: string }): string => {
-  if (["FORM", "LEMMA"].includes(tabMeta['label']))
-    return tokenTabData;
-  else if (['-', '–'].includes(tokenTabData))
-    return '_';
-  else
-    return tokenTabData;
-}
+  if (['FORM', 'LEMMA'].includes(tabMeta['label'])) return tokenTabData;
+  else if (['-', '–'].includes(tokenTabData)) return '_';
+  else return tokenTabData;
+};
 export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
   if (type === 'str') {
     return tokenTabData;
@@ -380,4 +377,17 @@ export const incrementIndex = (
   } else {
     return -1;
   }
+};
+
+export const constructTextFromTreeJson = (treeJson: TreeJson) => {
+  let sentence = '';
+  for (const tokenId in treeJson) {
+    if (treeJson[tokenId] && treeJson[tokenId].isGroup === false) {
+      const token = treeJson[tokenId];
+      const form = token.FORM;
+      const space = token.MISC.SpaceAfter === 'No' ? '' : ' ';
+      sentence = sentence + form + space;
+    }
+  }
+  return sentence;
 };

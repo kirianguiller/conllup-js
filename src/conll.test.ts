@@ -18,6 +18,7 @@ import {
   SentenceJson,
   TokenJson,
   replaceArrayOfTokens,
+  constructTextFromTreeJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -410,4 +411,115 @@ const treeJsonReplacedArray: TreeJson = {
 
 test('replaceArrayOfTokens', () => {
   expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
+});
+
+const treeJsonWithIndexToken: TreeJson = {
+  '1-2': {
+    ID: '1-2',
+    FORM: 'I eat',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: true,
+  },
+  '1': {
+    ID: '1',
+    FORM: 'I',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 5,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: false,
+  },
+  '2': {
+    ID: '2',
+    FORM: 'eat',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 0,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: false,
+  },
+  '2-5': {
+    ID: '2-5',
+    FORM: 'eat an apple',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: true,
+  },
+  '3-4': {
+    ID: '3-4',
+    FORM: 'an apple',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: true,
+  },
+  '3': {
+    ID: '3',
+    FORM: 'a',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: false,
+  },
+  '4': {
+    ID: '4',
+    FORM: 'red',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: false,
+  },
+  '5': {
+    ID: '5',
+    FORM: 'apple',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+    isGroup: false,
+  },
+};
+
+test('constructTextFromTreeJson', () => {
+  expect(constructTextFromTreeJson(treeJsonWithIndexToken)).toStrictEqual('I eat a red apple ');
 });
