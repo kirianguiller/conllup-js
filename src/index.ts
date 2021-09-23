@@ -7,6 +7,7 @@ import {
   emptyTokenJson,
   emptyFeatureJson,
   replaceArrayOfTokens,
+  constructTextFromTreeJson,
 } from './conll';
 
 export default {
@@ -18,4 +19,5 @@ export default {
   emptyTokenJson,
   emptyFeatureJson,
   replaceArrayOfTokens,
+  constructTextFromTreeJson,
 };
