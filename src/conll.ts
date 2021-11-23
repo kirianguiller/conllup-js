@@ -140,8 +140,10 @@ export const _extractTokenTabData = (tokenTabData: string, type: string): string
 export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   const trimmedTokenLine: string = tokenLine.trim();
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
-  if (splittedTokenLine.length!=10) {
-    throw new Error(`CONLL PARSING ERROR : line "${tokenLine}" is not valid, ${splittedTokenLine.length} columns found instead of 10`)
+  if (splittedTokenLine.length !== 10) {
+    throw new Error(
+      `CONLL PARSING ERROR : line "${tokenLine}" is not valid, ${splittedTokenLine.length} columns found instead of 10`,
+    );
   }
   const tokenJson: TokenJson = emptyTokenJson();
   for (const tabIndex in CONLL_STRUCTURE) {

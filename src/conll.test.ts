@@ -126,8 +126,8 @@ const groupTokenJson: TokenJson = {
 };
 
 // incomplete line (different than 10 columns per lines)
-const incompleteSmallerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_" // has only 9 features
-const incompleteBiggerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_	_	_" // has 11 features
+const incompleteSmallerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_"; // has only 9 features
+const incompleteBiggerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_	_	_"; // has 11 features
 
 test('_seperateMetaAndTreeFromSentenceConll', () => {
   expect(_seperateMetaAndTreeFromSentenceConll(sentenceConll)).toStrictEqual({
@@ -163,8 +163,12 @@ test('_tokenLineToJson', () => {
   expect(_tokenLineToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
   expect(_tokenLineToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
   expect(_tokenLineToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
-  expect(()=>{_tokenLineToJson(incompleteSmallerTokenLine)}).toThrowError();
-  expect(()=>{_tokenLineToJson(incompleteBiggerTokenLine)}).toThrowError();
+  expect(() => {
+    _tokenLineToJson(incompleteSmallerTokenLine);
+  }).toThrowError();
+  expect(() => {
+    _tokenLineToJson(incompleteBiggerTokenLine);
+  }).toThrowError();
 });
 
 test('_treeConllLinesToJson', () => {
