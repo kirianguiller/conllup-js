@@ -1,6 +1,6 @@
 {
   "name": "conllup",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Javascript library for converting conll sentence to json format and vice-versa.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
