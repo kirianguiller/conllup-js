@@ -16,7 +16,7 @@ import {
   MetaJson,
   NodesJson,
   SentenceJson,
-  NodeJson,
+  TokenJson,
   replaceArrayOfTokens,
   constructTextFromSentenceJson,
   GroupsJson,
@@ -32,7 +32,7 @@ const featureJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
 const tokenLine: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
 
-const nodeJson: NodeJson = {
+const nodeJson: TokenJson = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -64,7 +64,7 @@ const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 // checks for hyphen instead of undescore
 const hyphenInsteadOfUnderscoreLineConll: string = '1	form	lemma	upos	–	–	0	deprel	_	_';
 const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
-const hyphenInsteadOfUnderscoreLineJson: NodeJson = {
+const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -80,7 +80,7 @@ const hyphenInsteadOfUnderscoreLineJson: NodeJson = {
 // exclude FORM and LEMMA from hyphen-to-underscore replacement
 // (there could be a literal hyphen in the text!)
 const preserveHyphenInFormLemmaLineConll: string = '1	-	–	upos	_	_	0	deprel	_	_';
-const preserveHyphenInFormLemmaLineJson: NodeJson = {
+const preserveHyphenInFormLemmaLineJson: TokenJson = {
   ID: '1',
   FORM: '-',
   LEMMA: '–',
@@ -96,7 +96,7 @@ const preserveHyphenInFormLemmaLineJson: NodeJson = {
 // checks for "=" symbol is misc or feature field
 const equalSymbolInMiscOrFeatureTokenLine: string = '1	form	lemma	upos	_	person=first=second	_	_	_	_';
 // const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
-const equalSymbolInMiscOrFeatureTokenJson: NodeJson = {
+const equalSymbolInMiscOrFeatureTokenJson: TokenJson = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -115,7 +115,7 @@ const equalSymbolInMiscOrFeatureTokenJson: NodeJson = {
 // 2    's  's  _ _ _ _ _ _ _
 const groupTokenLine: string = "1-2	it's	it's	upos	_	_	_	deprel	_	_";
 
-const groupTokenJson: NodeJson = {
+const groupTokenJson: TokenJson = {
   ID: '1-2',
   FORM: "it's",
   LEMMA: "it's",

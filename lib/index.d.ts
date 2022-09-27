@@ -4,7 +4,7 @@ declare const _default: {
     emptySentenceJson: () => import("./conll").SentenceJson;
     emptyMetaJson: () => import("./conll").MetaJson;
     emptyTreeJson: () => import("./conll").TreeJson;
-    emptyTokenJson: () => import("./conll").NodeJson;
+    emptyTokenJson: () => import("./conll").TokenJson;
     emptyFeatureJson: () => import("./conll").FeatureJson;
     replaceArrayOfTokens: (treeJson: import("./conll").TreeJson, oldTokensIndexes: number[], newTokensForms: string[]) => import("./conll").TreeJson;
     constructTextFromSentenceJson: (sentenceJson: import("./conll").SentenceJson) => string;

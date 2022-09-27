@@ -2,7 +2,7 @@ export interface FeatureJson {
   [key: string]: string;
 }
 
-export type NodeJson = {
+export type TokenJson = {
   ID: string;
   FORM: string;
   LEMMA: string;
@@ -17,11 +17,11 @@ export type NodeJson = {
 }
 
 export interface NodesJson {
-  [key: string]: NodeJson;
+  [key: string]: TokenJson;
 }
 
 export interface GroupsJson {
-  [key: string]: NodeJson;
+  [key: string]: TokenJson;
 }
 
 export interface MetaJson {
@@ -40,7 +40,7 @@ export interface SentenceJson {
 
 export const emptyFeatureJson = (): FeatureJson => ({});
 
-export const emptyTokenJson = (): NodeJson => ({
+export const emptyTokenJson = (): TokenJson => ({
   ID: '_',
   FORM: '_',
   LEMMA: '_',
@@ -146,7 +146,7 @@ export const _extractTokenTabData = (tokenTabData: string, type: string): string
   }
 };
 
-export const _tokenLineToJson = (tokenLine: string): NodeJson => {
+export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   const trimmedTokenLine: string = tokenLine.trim();
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
   if (splittedTokenLine.length !== 10) {
@@ -154,7 +154,7 @@ export const _tokenLineToJson = (tokenLine: string): NodeJson => {
       `CONLL PARSING ERROR : line "${tokenLine}" is not valid, ${splittedTokenLine.length} columns found instead of 10`,
     );
   }
-  const tokenJson: NodeJson = emptyTokenJson();
+  const tokenJson: TokenJson = emptyTokenJson();
   for (const tabIndex in CONLL_STRUCTURE) {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STRUCTURE[tabIndex];
@@ -229,7 +229,7 @@ export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type
   }
 };
 
-export const _tokenJsonToLine = (tokenJson: NodeJson): string => {
+export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
   const splittedTokenConll: string[] = [];
   for (const tabIndex in CONLL_STRUCTURE) {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
@@ -304,7 +304,7 @@ export const _compareTokenIndexes = (a: string, b: string): number => {
   }
 };
 
-export const _isGroupToken = (tokenJson: NodeJson): boolean => {
+export const _isGroupToken = (tokenJson: TokenJson): boolean => {
   return tokenJson.ID.indexOf('-') > -1
 }
 
@@ -331,7 +331,7 @@ export const replaceArrayOfTokens = (
   const arrayFirst = oldTokensIndexes[0];
   const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1];
   for (const oldTokenJson of Object.values({ ...treeJson.nodesJson, ...treeJson.groupsJson })) {
-    const oldTokenJsonCopy: NodeJson = JSON.parse(JSON.stringify(oldTokenJson));
+    const oldTokenJsonCopy: TokenJson = JSON.parse(JSON.stringify(oldTokenJson));
     const newTokenJson = incrementIndexesOfToken(oldTokenJsonCopy, arrayFirst, arrayLast, differenceInSize);
 
     if (newTokenJson.ID !== '-1') {
@@ -353,11 +353,11 @@ export const replaceArrayOfTokens = (
 
 // TODO GROUP TOKEN REFACTOR
 export const incrementIndexesOfToken = (
-  tokenJson: NodeJson,
+  tokenJson: TokenJson,
   arrayFirst: number,
   arrayLast: number,
   differenceInSize: number,
-): NodeJson => {
+): TokenJson => {
   // handle ID
   if (_isGroupToken(tokenJson)) {
     const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split('-');
