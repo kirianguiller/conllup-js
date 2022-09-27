@@ -3,13 +3,10 @@ declare const _default: {
     sentenceJsonToConll: (sentenceJson: import("./conll").SentenceJson) => string;
     emptySentenceJson: () => import("./conll").SentenceJson;
     emptyMetaJson: () => import("./conll").MetaJson;
-    emptyTreeJson: () => import("./conll").NodesJson;
+    emptyTreeJson: () => import("./conll").TreeJson;
     emptyTokenJson: () => import("./conll").NodeJson;
     emptyFeatureJson: () => import("./conll").FeatureJson;
-    replaceArrayOfTokens: (nodesJson: import("./conll").NodesJson, groupsJson: import("./conll").GroupsJson, oldTokensIndexes: number[], newTokensForms: string[]) => {
-        newNodesJson: import("./conll").NodesJson;
-        newGroupsJson: import("./conll").NodesJson;
-    };
+    replaceArrayOfTokens: (treeJson: import("./conll").TreeJson, oldTokensIndexes: number[], newTokensForms: string[]) => import("./conll").TreeJson;
     constructTextFromSentenceJson: (sentenceJson: import("./conll").SentenceJson) => string;
 };
 export default _default;

@@ -28,9 +28,13 @@ export interface MetaJson {
   [key: string]: string | number;
 }
 
-export interface SentenceJson {
+export interface TreeJson {
   nodesJson: NodesJson;
   groupsJson: GroupsJson;
+}
+
+export interface SentenceJson {
+  treeJson: TreeJson;
   metaJson: MetaJson;
 }
 
@@ -51,12 +55,13 @@ export const emptyTokenJson = (): NodeJson => ({
 
 export const emptyMetaJson = (): MetaJson => ({});
 
-export const emptyTreeJson = (): NodesJson => ({});
+export const emptyNodesOrGroupsJson = (): NodesJson => ({});
+
+export const emptyTreeJson = (): TreeJson => ({ nodesJson: emptyNodesOrGroupsJson(), groupsJson: emptyNodesOrGroupsJson() });
 
 export const emptySentenceJson = (): SentenceJson => ({
   metaJson: emptyMetaJson(),
-  nodesJson: emptyTreeJson(),
-  groupsJson: emptyTreeJson(),
+  treeJson: emptyTreeJson(),
 });
 
 const CONLL_STRUCTURE: { [key: number]: { [key: string]: string } } = {
@@ -165,21 +170,20 @@ export const _tokenLineToJson = (tokenLine: string): NodeJson => {
 };
 
 
-export const _treeConllLinesToJson = (treeConllLines: string[]): { nodesJson: NodesJson, groupsJson: GroupsJson } => {
-  const nodesJson: NodesJson = emptyTreeJson();
-  const groupsJson: GroupsJson = emptyTreeJson();
+export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
+  const treeJson = emptyTreeJson()
 
   for (const tokenLine of treeConllLines) {
     const tokenJson = _tokenLineToJson(tokenLine);
     if (_isGroupToken(tokenJson) === true) {
       // the token is a group token
-      groupsJson[tokenJson.ID] = tokenJson;
+      treeJson.groupsJson[tokenJson.ID] = tokenJson;
     } else {
       // the token is a normal token
-      nodesJson[tokenJson.ID] = tokenJson;
+      treeJson.nodesJson[tokenJson.ID] = tokenJson;
     }
   }
-  return { nodesJson, groupsJson };
+  return treeJson;
 };
 
 export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
@@ -187,9 +191,7 @@ export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
   const { metaLines, treeLines } = _seperateMetaAndTreeFromSentenceConll(sentenceConll);
 
   sentenceJson.metaJson = _metaConllLinesToJson(metaLines);
-  const { nodesJson, groupsJson } = _treeConllLinesToJson(treeLines)
-  sentenceJson.nodesJson = nodesJson
-  sentenceJson.groupsJson = groupsJson
+  sentenceJson.treeJson = _treeConllLinesToJson(treeLines)
 
   return sentenceJson;
 };
@@ -244,9 +246,9 @@ export const _tokenJsonToLine = (tokenJson: NodeJson): string => {
   return tokenConll;
 };
 
-export const _treeJsonToConll = (nodesJson: NodesJson, groupsJson: GroupsJson): string => {
+export const _treeJsonToConll = (treeJson: TreeJson): string => {
   const treeConllLines: string[] = [];
-  const tokensJson = { ...nodesJson, ...groupsJson }
+  const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson }
   const tokenIndexes = Object.values(tokensJson).map((tokenJson) => {
     return tokenJson.ID;
   });
@@ -281,8 +283,7 @@ export const _metaJsonToConll = (metaJson: MetaJson): string => {
 
 export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
   let metaConll = _metaJsonToConll(sentenceJson.metaJson);
-  const treeConll = _treeJsonToConll(sentenceJson.nodesJson, sentenceJson.groupsJson);
-
+  const treeConll = _treeJsonToConll(sentenceJson.treeJson);
   if (metaConll === "") {
     return treeConll
   }
@@ -308,13 +309,12 @@ export const _isGroupToken = (tokenJson: NodeJson): boolean => {
 }
 
 export const replaceArrayOfTokens = (
-  nodesJson: NodesJson,
-  groupsJson: GroupsJson,
+  treeJson: TreeJson,
   oldTokensIndexes: number[],
   newTokensForms: string[],
-) => {
-  const newNodesJson = emptyTreeJson();
-  const newGroupsJson = emptyTreeJson();
+): TreeJson => {
+  const newNodesJson = emptyNodesOrGroupsJson();
+  const newGroupsJson = emptyNodesOrGroupsJson();
 
   // add new tokens to new tree
   let newTokenIndex = oldTokensIndexes[0];
@@ -330,7 +330,7 @@ export const replaceArrayOfTokens = (
   const differenceInSize = newTokensForms.length - oldTokensIndexes.length;
   const arrayFirst = oldTokensIndexes[0];
   const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1];
-  for (const oldTokenJson of Object.values({ ...nodesJson, ...groupsJson })) {
+  for (const oldTokenJson of Object.values({ ...treeJson.nodesJson, ...treeJson.groupsJson })) {
     const oldTokenJsonCopy: NodeJson = JSON.parse(JSON.stringify(oldTokenJson));
     const newTokenJson = incrementIndexesOfToken(oldTokenJsonCopy, arrayFirst, arrayLast, differenceInSize);
 
@@ -344,7 +344,11 @@ export const replaceArrayOfTokens = (
       }
     }
   }
-  return { newNodesJson, newGroupsJson };
+  const newTreeJson: TreeJson = {
+    nodesJson: newNodesJson,
+    groupsJson: newGroupsJson,
+  }
+  return newTreeJson;
 };
 
 // TODO GROUP TOKEN REFACTOR
@@ -409,9 +413,9 @@ const mappingSpacesAfter: [string, string][] = [
 
 export const constructTextFromSentenceJson = (sentenceJson: SentenceJson) => {
   let sentence = '';
-  for (const tokenId in sentenceJson.nodesJson) {
-    if (sentenceJson.nodesJson[tokenId] && _isGroupToken(sentenceJson.nodesJson[tokenId]) === false) {
-      const token = sentenceJson.nodesJson[tokenId];
+  for (const tokenId in sentenceJson.treeJson.nodesJson) {
+    if (sentenceJson.treeJson.nodesJson[tokenId] && _isGroupToken(sentenceJson.treeJson.nodesJson[tokenId]) === false) {
+      const token = sentenceJson.treeJson.nodesJson[tokenId];
       const form = token.FORM;
       const space = token.MISC.SpaceAfter === 'No' ? '' : ' ';
       if (token.MISC.SpacesAfter) {
