@@ -59,4 +59,4 @@ export declare const _isGroupToken: (tokenJson: TokenJson) => boolean;
 export declare const replaceArrayOfTokens: (treeJson: TreeJson, oldTokensIndexes: number[], newTokensForms: string[]) => TreeJson;
 export declare const incrementIndexesOfToken: (tokenJson: TokenJson, arrayFirst: number, arrayLast: number, differenceInSize: number) => TokenJson;
 export declare const incrementIndex: (index: number, arrayFirst: number, arrayLast: number, differenceInSize: number) => number;
-export declare const constructTextFromSentenceJson: (sentenceJson: SentenceJson) => string;
+export declare const constructTextFromTreeJson: (treeJson: TreeJson) => string;

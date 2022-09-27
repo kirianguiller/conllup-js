@@ -18,7 +18,7 @@ import {
   SentenceJson,
   TokenJson,
   replaceArrayOfTokens,
-  constructTextFromSentenceJson,
+  constructTextFromTreeJson,
   GroupsJson,
   emptyTreeJson,
   emptyMetaJson,
@@ -568,8 +568,8 @@ const sentenceJsonToReconstructText: SentenceJson = {
   }
 };
 
-test('constructTextFromSentenceJson', () => {
-  expect(constructTextFromSentenceJson(sentenceJsonToReconstructText)).toStrictEqual('I eat a red apple ');
+test('constructTextFromTreeJson', () => {
+  expect(constructTextFromTreeJson(sentenceJsonToReconstructText.treeJson)).toStrictEqual('I eat a red apple ');
 });
 
 
@@ -606,8 +606,8 @@ const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
   }
 };
 
-test('constructTextFromSentenceJson', () => {
-  expect(constructTextFromSentenceJson(sentenceJsonToReconstructTextWithSpacesAfter)).toStrictEqual('Ver\tlo\n\n\t');
+test('constructTextFromTreeJson', () => {
+  expect(constructTextFromTreeJson(sentenceJsonToReconstructTextWithSpacesAfter.treeJson)).toStrictEqual('Ver\tlo\n\n\t');
 });
 
 

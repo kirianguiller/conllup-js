@@ -411,11 +411,11 @@ const mappingSpacesAfter: [string, string][] = [
   ["\\\\r", "\r"],
 ]
 
-export const constructTextFromSentenceJson = (sentenceJson: SentenceJson) => {
+export const constructTextFromTreeJson = (treeJson: TreeJson) => {
   let sentence = '';
-  for (const tokenId in sentenceJson.treeJson.nodesJson) {
-    if (sentenceJson.treeJson.nodesJson[tokenId] && _isGroupToken(sentenceJson.treeJson.nodesJson[tokenId]) === false) {
-      const token = sentenceJson.treeJson.nodesJson[tokenId];
+  for (const tokenId in treeJson.nodesJson) {
+    if (treeJson.nodesJson[tokenId] && _isGroupToken(treeJson.nodesJson[tokenId]) === false) {
+      const token = treeJson.nodesJson[tokenId];
       const form = token.FORM;
       const space = token.MISC.SpaceAfter === 'No' ? '' : ' ';
       if (token.MISC.SpacesAfter) {

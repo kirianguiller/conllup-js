@@ -7,6 +7,6 @@ declare const _default: {
     emptyTokenJson: () => import("./conll").TokenJson;
     emptyFeatureJson: () => import("./conll").FeatureJson;
     replaceArrayOfTokens: (treeJson: import("./conll").TreeJson, oldTokensIndexes: number[], newTokensForms: string[]) => import("./conll").TreeJson;
-    constructTextFromSentenceJson: (sentenceJson: import("./conll").SentenceJson) => string;
+    constructTextFromTreeJson: (treeJson: import("./conll").TreeJson) => string;
 };
 export default _default;
