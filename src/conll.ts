@@ -14,7 +14,7 @@ export type TokenJson = {
   DEPS: FeatureJson;
   MISC: FeatureJson;
   [key: string]: string | number | FeatureJson;
-}
+};
 
 export interface NodesJson {
   [key: string]: TokenJson;
@@ -57,7 +57,10 @@ export const emptyMetaJson = (): MetaJson => ({});
 
 export const emptyNodesOrGroupsJson = (): NodesJson => ({});
 
-export const emptyTreeJson = (): TreeJson => ({ nodesJson: emptyNodesOrGroupsJson(), groupsJson: emptyNodesOrGroupsJson() });
+export const emptyTreeJson = (): TreeJson => ({
+  nodesJson: emptyNodesOrGroupsJson(),
+  groupsJson: emptyNodesOrGroupsJson(),
+});
 
 export const emptySentenceJson = (): SentenceJson => ({
   metaJson: emptyMetaJson(),
@@ -169,9 +172,8 @@ export const _tokenLineToJson = (tokenLine: string): TokenJson => {
   return tokenJson;
 };
 
-
 export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
-  const treeJson = emptyTreeJson()
+  const treeJson = emptyTreeJson();
 
   for (const tokenLine of treeConllLines) {
     const tokenJson = _tokenLineToJson(tokenLine);
@@ -191,7 +193,7 @@ export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
   const { metaLines, treeLines } = _seperateMetaAndTreeFromSentenceConll(sentenceConll);
 
   sentenceJson.metaJson = _metaConllLinesToJson(metaLines);
-  sentenceJson.treeJson = _treeConllLinesToJson(treeLines)
+  sentenceJson.treeJson = _treeConllLinesToJson(treeLines);
 
   return sentenceJson;
 };
@@ -248,7 +250,7 @@ export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
 
 export const _treeJsonToConll = (treeJson: TreeJson): string => {
   const treeConllLines: string[] = [];
-  const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson }
+  const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson };
   const tokenIndexes = Object.values(tokensJson).map((tokenJson) => {
     return tokenJson.ID;
   });
@@ -284,10 +286,10 @@ export const _metaJsonToConll = (metaJson: MetaJson): string => {
 export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
   const metaConll = _metaJsonToConll(sentenceJson.metaJson);
   const treeConll = _treeJsonToConll(sentenceJson.treeJson);
-  if (metaConll === "") {
-    return treeConll
+  if (metaConll === '') {
+    return treeConll;
   }
-  return `${metaConll}\n${treeConll}`
+  return `${metaConll}\n${treeConll}`;
 };
 
 export const _sortTokenIndexes = (tokenIndexes: string[]): string[] => {
@@ -305,8 +307,8 @@ export const _compareTokenIndexes = (a: string, b: string): number => {
 };
 
 export const _isGroupToken = (tokenJson: TokenJson): boolean => {
-  return tokenJson.ID.indexOf('-') > -1
-}
+  return tokenJson.ID.indexOf('-') > -1;
+};
 
 export const replaceArrayOfTokens = (
   treeJson: TreeJson,
@@ -347,7 +349,7 @@ export const replaceArrayOfTokens = (
   const newTreeJson: TreeJson = {
     nodesJson: newNodesJson,
     groupsJson: newGroupsJson,
-  }
+  };
   return newTreeJson;
 };
 
@@ -364,10 +366,10 @@ export const incrementIndexesOfToken = (
     const newTokenJsonId1 = incrementIndex(parseInt(tokenJsonId1, 10), arrayFirst, arrayLast, differenceInSize);
     const newTokenJsonId2 = incrementIndex(parseInt(tokenJsonId2, 10), arrayFirst, arrayLast, differenceInSize);
     if (newTokenJsonId1 !== -1 && newTokenJsonId2 !== -1) {
-      const newGroupId = `${newTokenJsonId1}-${newTokenJsonId2}`
+      const newGroupId = `${newTokenJsonId1}-${newTokenJsonId2}`;
       tokenJson.ID = newGroupId;
     } else {
-      tokenJson.ID = "-1"
+      tokenJson.ID = '-1';
     }
   } else {
     const tokenJsonId = tokenJson.ID;
@@ -397,19 +399,19 @@ export const incrementIndex = (
   } else if (index > arrayLast) {
     return index + differenceInSize;
   } else {
-    // if index === 
+    // if index ===
     return -1;
   }
 };
 
 const mappingSpacesAfter: [string, string][] = [
-  ["\\s", "\s"],
-  ["\\\\t", "\t"],
-  ["\\\\n", "\n"],
-  ["\\\\v", "\v"],
-  ["\\\\f", "\f"],
-  ["\\\\r", "\r"],
-]
+  ['\\s', 's'],
+  ['\\\\t', '\t'],
+  ['\\\\n', '\n'],
+  ['\\\\v', '\v'],
+  ['\\\\f', '\f'],
+  ['\\\\r', '\r'],
+];
 
 export const constructTextFromTreeJson = (treeJson: TreeJson) => {
   let sentence = '';
@@ -419,12 +421,12 @@ export const constructTextFromTreeJson = (treeJson: TreeJson) => {
       const form = token.FORM;
       const space = token.MISC.SpaceAfter === 'No' ? '' : ' ';
       if (token.MISC.SpacesAfter) {
-        let spaces = token.MISC.SpacesAfter
+        let spaces = token.MISC.SpacesAfter;
         for (const [SpaceAfter, SpaceAfterConverted] of mappingSpacesAfter) {
-          spaces = spaces.replaceAll(SpaceAfter, SpaceAfterConverted)
+          spaces = spaces.replaceAll(SpaceAfter, SpaceAfterConverted);
         }
-        sentence = sentence + form + spaces
-        continue
+        sentence = sentence + form + spaces;
+        continue;
       }
       sentence = sentence + form + space;
     }

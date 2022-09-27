@@ -45,9 +45,8 @@ const nodeJson: TokenJson = {
   MISC: { misc_key: 'misc_value' },
 };
 
-
 const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
-const groupsJson: GroupsJson = emptyNodesOrGroupsJson()
+const groupsJson: GroupsJson = emptyNodesOrGroupsJson();
 const treeJson: TreeJson = { nodesJson: { 1: nodeJson }, groupsJson };
 
 const sentenceJson: SentenceJson = { metaJson, treeJson };
@@ -221,15 +220,14 @@ test('_compareTokenIndexes', () => {
   expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
 });
 
-const conllToJsonToConll =
-  `# meta_key = meta_value
+const conllToJsonToConll = `# meta_key = meta_value
 1-2\tform\t_\t_\t_\t_\t_\t_\t_\t_
 1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tSpacesAfter=\\\\t
 2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value`;
 
 test('conllToJsonToConll', () => {
-  expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll)
-})
+  expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll);
+});
 
 const nodesJsonToBeReplaceArray: NodesJson = {
   '1': {
@@ -348,7 +346,7 @@ const groupsJsonToBeReplaceArray: NodesJson = {
 const treeJsonToBeReplaceArray: TreeJson = {
   nodesJson: nodesJsonToBeReplaceArray,
   groupsJson: groupsJsonToBeReplaceArray,
-}
+};
 
 const nodesJsonReplacedArray: NodesJson = {
   '1': {
@@ -467,7 +465,7 @@ const groupsJsonReplacedArray: NodesJson = {
 const treeJsonReplacedArray: TreeJson = {
   nodesJson: nodesJsonReplacedArray,
   groupsJson: groupsJsonReplacedArray,
-}
+};
 
 test('replaceArrayOfTokens', () => {
   expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
@@ -564,14 +562,13 @@ const sentenceJsonToReconstructText: SentenceJson = {
         DEPS: {},
         MISC: {},
       },
-    }
-  }
+    },
+  },
 };
 
 test('constructTextFromTreeJson', () => {
   expect(constructTextFromTreeJson(sentenceJsonToReconstructText.treeJson)).toStrictEqual('I eat a red apple ');
 });
-
 
 const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
   metaJson: emptyMetaJson(),
@@ -587,7 +584,7 @@ const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
         HEAD: 5,
         DEPREL: '_',
         DEPS: {},
-        MISC: { SpaceAfter: "No", SpacesAfter: '\\\\t' },
+        MISC: { SpaceAfter: 'No', SpacesAfter: '\\\\t' },
       },
       '2': {
         ID: '2',
@@ -599,15 +596,15 @@ const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
         HEAD: 0,
         DEPREL: '_',
         DEPS: {},
-        MISC: { SpacesAfter: "\\\\n\\\\n\\\\t" },
+        MISC: { SpacesAfter: '\\\\n\\\\n\\\\t' },
       },
     },
-    groupsJson: emptyNodesOrGroupsJson()
-  }
+    groupsJson: emptyNodesOrGroupsJson(),
+  },
 };
 
 test('constructTextFromTreeJson', () => {
-  expect(constructTextFromTreeJson(sentenceJsonToReconstructTextWithSpacesAfter.treeJson)).toStrictEqual('Ver\tlo\n\n\t');
+  expect(constructTextFromTreeJson(sentenceJsonToReconstructTextWithSpacesAfter.treeJson)).toStrictEqual(
+    'Ver\tlo\n\n\t',
+  );
 });
-
-
