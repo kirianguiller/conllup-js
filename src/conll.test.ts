@@ -48,7 +48,7 @@ const nodeJson: TokenJson = {
 
 const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
 const groupsJson: GroupsJson = emptyNodesOrGroupsJson()
-const treeJson: TreeJson = { nodesJson: { 1: nodeJson }, groupsJson: groupsJson };
+const treeJson: TreeJson = { nodesJson: { 1: nodeJson }, groupsJson };
 
 const sentenceJson: SentenceJson = { metaJson, treeJson };
 
@@ -221,14 +221,14 @@ test('_compareTokenIndexes', () => {
   expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
 });
 
-const conll_to_json_to_conll =
+const conllToJsonToConll =
   `# meta_key = meta_value
 1-2\tform\t_\t_\t_\t_\t_\t_\t_\t_
 1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tSpacesAfter=\\\\t
 2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value`;
 
-test('conll_to_json_to_conll', () => {
-  expect(sentenceJsonToConll(sentenceConllToJson(conll_to_json_to_conll))).toBe(conll_to_json_to_conll)
+test('conllToJsonToConll', () => {
+  expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll)
 })
 
 const nodesJsonToBeReplaceArray: NodesJson = {

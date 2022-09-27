@@ -282,7 +282,7 @@ export const _metaJsonToConll = (metaJson: MetaJson): string => {
 };
 
 export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
-  let metaConll = _metaJsonToConll(sentenceJson.metaJson);
+  const metaConll = _metaJsonToConll(sentenceJson.metaJson);
   const treeConll = _treeJsonToConll(sentenceJson.treeJson);
   if (metaConll === "") {
     return treeConll
