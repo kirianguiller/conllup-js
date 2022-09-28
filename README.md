@@ -9,7 +9,8 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
-
+### 2.0.1 
+add compatibility for node import (from 3rd party codebase)
 ### 2.0.0
 (Still in development)
 - Refactor the SentenceJson type to move the Group tokens in their own property (SentenceJson.GroupsToken)
