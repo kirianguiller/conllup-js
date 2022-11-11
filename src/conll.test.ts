@@ -14,11 +14,16 @@ import {
   _compareTokenIndexes,
   sentenceJsonToConll,
   MetaJson,
-  TreeJson,
+  NodesJson,
   SentenceJson,
   TokenJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
+  GroupsJson,
+  emptyTreeJson,
+  emptyMetaJson,
+  TreeJson,
+  emptyNodesOrGroupsJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -27,7 +32,7 @@ const featureJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
 const tokenLine: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
 
-const tokenJson: TokenJson = {
+const nodeJson: TokenJson = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -38,11 +43,12 @@ const tokenJson: TokenJson = {
   DEPREL: 'deprel',
   DEPS: { dep_key: 'dep_value' },
   MISC: { misc_key: 'misc_value' },
-  isGroup: false,
 };
 
 const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
-const treeJson: TreeJson = { 1: tokenJson };
+const groupsJson: GroupsJson = emptyNodesOrGroupsJson();
+const treeJson: TreeJson = { nodesJson: { 1: nodeJson }, groupsJson };
+
 const sentenceJson: SentenceJson = { metaJson, treeJson };
 
 const metaConll: string = '# meta_key = meta_value\n# meta_key2 = meta_value2';
@@ -68,7 +74,6 @@ const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
   DEPREL: 'deprel',
   DEPS: {},
   MISC: {},
-  isGroup: false,
 };
 
 // exclude FORM and LEMMA from hyphen-to-underscore replacement
@@ -85,7 +90,6 @@ const preserveHyphenInFormLemmaLineJson: TokenJson = {
   DEPREL: 'deprel',
   DEPS: {},
   MISC: {},
-  isGroup: false,
 };
 
 // checks for "=" symbol is misc or feature field
@@ -102,7 +106,6 @@ const equalSymbolInMiscOrFeatureTokenJson: TokenJson = {
   DEPREL: '_',
   DEPS: {},
   MISC: {},
-  isGroup: false,
 };
 
 // check for group token, for exemple :
@@ -122,7 +125,6 @@ const groupTokenJson: TokenJson = {
   DEPREL: 'deprel',
   DEPS: {},
   MISC: {},
-  isGroup: true,
 };
 
 // incomplete line (different than 10 columns per lines)
@@ -158,7 +160,7 @@ test('_extractTokenTabData', () => {
 });
 
 test('_tokenLineToJson', () => {
-  expect(_tokenLineToJson(tokenLine)).toStrictEqual(tokenJson);
+  expect(_tokenLineToJson(tokenLine)).toStrictEqual(nodeJson);
   expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
   expect(_tokenLineToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
   expect(_tokenLineToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
@@ -193,7 +195,7 @@ test('_tabDataJsonToConll', () => {
 });
 
 test('_tokenJsonToLine', () => {
-  expect(_tokenJsonToLine(tokenJson)).toStrictEqual(tokenLine);
+  expect(_tokenJsonToLine(nodeJson)).toStrictEqual(tokenLine);
   expect(_tokenJsonToLine(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(
     hyphenInsteadOfUnderscoreLineConllCorrected,
   );
@@ -218,20 +220,16 @@ test('_compareTokenIndexes', () => {
   expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
 });
 
-const treeJsonToBeReplaceArray: TreeJson = {
-  '1-2': {
-    ID: '1-2',
-    FORM: 'I eat',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
-  },
+const conllToJsonToConll = `# meta_key = meta_value
+1-2\tform\t_\t_\t_\t_\t_\t_\t_\t_
+1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tSpacesAfter=\\\\t
+2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value`;
+
+test('conllToJsonToConll', () => {
+  expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll);
+});
+
+const nodesJsonToBeReplaceArray: NodesJson = {
   '1': {
     ID: '1',
     FORM: 'I',
@@ -243,7 +241,6 @@ const treeJsonToBeReplaceArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
   },
   '2': {
     ID: '2',
@@ -256,20 +253,6 @@ const treeJsonToBeReplaceArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
-  },
-  '2-4': {
-    ID: '2-4',
-    FORM: 'eat an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
   },
   '3': {
     ID: '3',
@@ -282,20 +265,6 @@ const treeJsonToBeReplaceArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
-  },
-  '3-4': {
-    ID: '3-4',
-    FORM: 'an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
   },
   '4': {
     ID: '4',
@@ -308,11 +277,34 @@ const treeJsonToBeReplaceArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
+  },
+  '5': {
+    ID: '5',
+    FORM: 'with',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '6': {
+    ID: '6',
+    FORM: 'you',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
   },
 };
 
-const treeJsonReplacedArray: TreeJson = {
+const groupsJsonToBeReplaceArray: NodesJson = {
   '1-2': {
     ID: '1-2',
     FORM: 'I eat',
@@ -324,8 +316,39 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: true,
   },
+  '3-4': {
+    ID: '3-4',
+    FORM: 'an apple',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '5-6': {
+    ID: '5-6',
+    FORM: 'with you',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 4,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+};
+
+const treeJsonToBeReplaceArray: TreeJson = {
+  nodesJson: nodesJsonToBeReplaceArray,
+  groupsJson: groupsJsonToBeReplaceArray,
+};
+
+const nodesJsonReplacedArray: NodesJson = {
   '1': {
     ID: '1',
     FORM: 'I',
@@ -337,7 +360,6 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
   },
   '2': {
     ID: '2',
@@ -350,33 +372,6 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
-  },
-  '2-5': {
-    ID: '2-5',
-    FORM: 'eat an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
-  },
-  '3-4': {
-    ID: '3-4',
-    FORM: 'an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
   },
   '3': {
     ID: '3',
@@ -389,7 +384,6 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
   },
   '4': {
     ID: '4',
@@ -402,7 +396,6 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
   },
   '5': {
     ID: '5',
@@ -415,121 +408,203 @@ const treeJsonReplacedArray: TreeJson = {
     DEPREL: '_',
     DEPS: {},
     MISC: {},
-    isGroup: false,
   },
+  '6': {
+    ID: '6',
+    FORM: 'with',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '7': {
+    ID: '7',
+    FORM: 'you',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+};
+
+const groupsJsonReplacedArray: NodesJson = {
+  '1-2': {
+    ID: '1-2',
+    FORM: 'I eat',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '6-7': {
+    ID: '6-7',
+    FORM: 'with you',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 5,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+};
+
+const treeJsonReplacedArray: TreeJson = {
+  nodesJson: nodesJsonReplacedArray,
+  groupsJson: groupsJsonReplacedArray,
 };
 
 test('replaceArrayOfTokens', () => {
   expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
 });
 
-const treeJsonWithIndexToken: TreeJson = {
-  '1-2': {
-    ID: '1-2',
-    FORM: 'I eat',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
-  },
-  '1': {
-    ID: '1',
-    FORM: 'I',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 5,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: false,
-  },
-  '2': {
-    ID: '2',
-    FORM: 'eat',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 0,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: false,
-  },
-  '2-5': {
-    ID: '2-5',
-    FORM: 'eat an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
-  },
-  '3-4': {
-    ID: '3-4',
-    FORM: 'an apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: true,
-  },
-  '3': {
-    ID: '3',
-    FORM: 'a',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: false,
-  },
-  '4': {
-    ID: '4',
-    FORM: 'red',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: false,
-  },
-  '5': {
-    ID: '5',
-    FORM: 'apple',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 2,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-    isGroup: false,
+const sentenceJsonToReconstructText: SentenceJson = {
+  metaJson: emptyMetaJson(),
+  treeJson: {
+    nodesJson: {
+      '1': {
+        ID: '1',
+        FORM: 'I',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: 5,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+      '2': {
+        ID: '2',
+        FORM: 'eat',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: 0,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+
+      '3': {
+        ID: '3',
+        FORM: 'a',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: -1,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+      '4': {
+        ID: '4',
+        FORM: 'red',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: -1,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+      '5': {
+        ID: '5',
+        FORM: 'apple',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: 2,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+    },
+    groupsJson: {
+      '1-2': {
+        ID: '1-2',
+        FORM: 'I eat',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: -1,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+      '2-5': {
+        ID: '2-5',
+        FORM: 'eat an apple',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: -1,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: {},
+      },
+    },
   },
 };
 
 test('constructTextFromTreeJson', () => {
-  expect(constructTextFromTreeJson(treeJsonWithIndexToken)).toStrictEqual('I eat a red apple ');
+  expect(constructTextFromTreeJson(sentenceJsonToReconstructText.treeJson)).toStrictEqual('I eat a red apple ');
+});
+
+const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
+  metaJson: emptyMetaJson(),
+  treeJson: {
+    nodesJson: {
+      '1': {
+        ID: '1',
+        FORM: 'Ver',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: 5,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: { SpaceAfter: 'No', SpacesAfter: '\\\\t' },
+      },
+      '2': {
+        ID: '2',
+        FORM: 'lo',
+        LEMMA: '_',
+        UPOS: '_',
+        XPOS: '_',
+        FEATS: {},
+        HEAD: 0,
+        DEPREL: '_',
+        DEPS: {},
+        MISC: { SpacesAfter: '\\\\n\\\\n\\\\t' },
+      },
+    },
+    groupsJson: emptyNodesOrGroupsJson(),
+  },
+};
+
+test('constructTextFromTreeJson', () => {
+  expect(constructTextFromTreeJson(sentenceJsonToReconstructTextWithSpacesAfter.treeJson)).toStrictEqual(
+    'Ver\tlo\n\n\t',
+  );
 });
