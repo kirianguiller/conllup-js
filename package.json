@@ -11,6 +11,7 @@
     "lint": "tslint -p tsconfig.json",
     "buildWeb": "webpack",
     "buildNode": "tsc",
+    "build": "npm run buildNode",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
