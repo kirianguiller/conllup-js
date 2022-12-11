@@ -608,3 +608,12 @@ test('constructTextFromTreeJson', () => {
     'Ver\tlo\n\n\t',
   );
 });
+
+
+test('sentenceConllToJson_throw_error', () => {
+  expect(() => {sentenceConllToJson(1 as any)}).toThrowError(TypeError);
+  expect(() => {sentenceConllToJson(1 as any)}).toThrow("parameter `sentenceConll` in sentenceConllToJson() is not a string (got `number`)");
+  expect(() => {sentenceConllToJson(null as any)}).toThrowError(TypeError);
+  expect(() => {sentenceConllToJson(null as any)}).toThrow("parameter `sentenceConll` in sentenceConllToJson() is not a string (got `object`)");
+  expect(() => {sentenceConllToJson(undefined as any)}).toThrow("parameter `sentenceConll` in sentenceConllToJson() is not a string (got `undefined`)");
+})

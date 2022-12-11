@@ -189,6 +189,9 @@ export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
 };
 
 export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
+  if (typeof sentenceConll !== "string") {
+    throw new TypeError(`parameter \`sentenceConll\` in sentenceConllToJson() is not a string (got \`${typeof sentenceConll}\`)`);
+  }
   const sentenceJson: SentenceJson = emptySentenceJson();
   const { metaLines, treeLines } = _seperateMetaAndTreeFromSentenceConll(sentenceConll);
 
