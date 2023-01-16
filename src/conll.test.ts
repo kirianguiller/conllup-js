@@ -257,8 +257,8 @@ const nodesJsonToBeReplaceArray: NodesJson = {
   '3': {
     ID: '3',
     FORM: 'an',
-    LEMMA: 'lemma',
-    UPOS: 'upos',
+    LEMMA: 'a',
+    UPOS: 'DET',
     XPOS: '_',
     FEATS: {},
     HEAD: 4,
@@ -269,8 +269,8 @@ const nodesJsonToBeReplaceArray: NodesJson = {
   '4': {
     ID: '4',
     FORM: 'apple',
-    LEMMA: '_',
-    UPOS: '_',
+    LEMMA: 'apple',
+    UPOS: 'NOUN',
     XPOS: '_',
     FEATS: {},
     HEAD: 2,
@@ -343,7 +343,7 @@ const groupsJsonToBeReplaceArray: NodesJson = {
   },
 };
 
-const treeJsonToBeReplaceArray: TreeJson = {
+const treeJsonToBeReplaceArrayWithGroup: TreeJson = {
   nodesJson: nodesJsonToBeReplaceArray,
   groupsJson: groupsJsonToBeReplaceArray,
 };
@@ -376,11 +376,11 @@ const nodesJsonReplacedArray: NodesJson = {
   '3': {
     ID: '3',
     FORM: 'a',
-    LEMMA: '_',
-    UPOS: '_',
+    LEMMA: 'a',
+    UPOS: 'DET',
     XPOS: '_',
     FEATS: {},
-    HEAD: -1,
+    HEAD: 5,
     DEPREL: '_',
     DEPS: {},
     MISC: {},
@@ -388,11 +388,11 @@ const nodesJsonReplacedArray: NodesJson = {
   '4': {
     ID: '4',
     FORM: 'red',
-    LEMMA: '_',
-    UPOS: '_',
+    LEMMA: 'red',
+    UPOS: 'DET',
     XPOS: '_',
     FEATS: {},
-    HEAD: -1,
+    HEAD: 5,
     DEPREL: '_',
     DEPS: {},
     MISC: {},
@@ -400,8 +400,8 @@ const nodesJsonReplacedArray: NodesJson = {
   '5': {
     ID: '5',
     FORM: 'apple',
-    LEMMA: '_',
-    UPOS: '_',
+    LEMMA: 'apple',
+    UPOS: 'NOUN',
     XPOS: '_',
     FEATS: {},
     HEAD: 2,
@@ -462,146 +462,212 @@ const groupsJsonReplacedArray: NodesJson = {
   },
 };
 
-const treeJsonReplacedArray: TreeJson = {
+const treeJsonReplacedArrayWithGroup: TreeJson = {
   nodesJson: nodesJsonReplacedArray,
   groupsJson: groupsJsonReplacedArray,
 };
 
-test('replaceArrayOfTokens', () => {
-  expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
+test('replaceArrayOfTokensWithGroupWithSmartBehavior', () => {
+  expect(replaceArrayOfTokens(treeJsonToBeReplaceArrayWithGroup, [3], ['a', 'red'], true)).toStrictEqual(
+    treeJsonReplacedArrayWithGroup,
+  );
 });
 
-const nodesJsonToBeReplaceArrayDeprelBug: NodesJson = {
-  '1': {
-    ID: '1',
-    FORM: 'bah',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 3,
-    DEPREL: 'discourse',
-    DEPS: {},
-    MISC: {},
+const treeJsonToBeReplaceArray: TreeJson = {
+  nodesJson: {
+    '1': {
+      ID: '1',
+      FORM: 'bah',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 3,
+      DEPREL: 'discourse',
+      DEPS: {},
+      MISC: {},
+    },
+    '2': {
+      ID: '2',
+      FORM: ',',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 1,
+      DEPREL: 'punct',
+      DEPS: {},
+      MISC: {},
+    },
+    '3': {
+      ID: '3',
+      FORM: 'tutoie-moi',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 0,
+      DEPREL: 'root',
+      DEPS: {},
+      MISC: {},
+    },
+    '4': {
+      ID: '4',
+      FORM: 'quoi',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 3,
+      DEPREL: 'interjection',
+      DEPS: {},
+      MISC: {},
+    },
   },
-  '2': {
-    ID: '2',
-    FORM: ',',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 1,
-    DEPREL: 'punct',
-    DEPS: {},
-    MISC: {},
-  },
-  '3': {
-    ID: '3',
-    FORM: 'tutoie-moi',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 0,
-    DEPREL: 'root',
-    DEPS: {},
-    MISC: {},
-  },
-  '4': {
-    ID: '4',
-    FORM: 'quoi',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 3,
-    DEPREL: 'interjection',
-    DEPS: {},
-    MISC: {},
-  },
+  groupsJson: {},
 };
 
-const groupsJsonToBeReplaceArrayDeprelBug: NodesJson = {};
-
-const treeJsonToBeReplaceArrayDeprelBug: TreeJson = {
-  nodesJson: nodesJsonToBeReplaceArrayDeprelBug,
-  groupsJson: groupsJsonToBeReplaceArrayDeprelBug,
+const treeJsonReplacedArrayWithoutSmartBehavior: TreeJson = {
+  nodesJson: {
+    '1': {
+      ID: '1',
+      FORM: 'bah',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: -1,
+      DEPREL: '_',
+      DEPS: {},
+      MISC: {},
+    },
+    '2': {
+      ID: '2',
+      FORM: ',',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 1,
+      DEPREL: 'punct',
+      DEPS: {},
+      MISC: {},
+    },
+    '3': {
+      ID: '3',
+      FORM: 'tutoie-',
+      LEMMA: 'tutoie-',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: -1,
+      DEPREL: '_',
+      DEPS: {},
+      MISC: {},
+    },
+    '4': {
+      ID: '4',
+      FORM: 'moi',
+      LEMMA: 'moi',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: -1,
+      DEPREL: '_',
+      DEPS: {},
+      MISC: {},
+    },
+    '5': {
+      ID: '5',
+      FORM: 'quoi',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: -1,
+      DEPREL: '_',
+      DEPS: {},
+      MISC: {},
+    },
+  },
+  groupsJson: {},
 };
 
-const nodesJsonReplacedArrayDeprelBug: NodesJson = {
-  '1': {
-    ID: '1',
-    FORM: 'bah',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
+const treeJsonReplacedArrayWithSmartBehavior: TreeJson = {
+  nodesJson: {
+    '1': {
+      ID: '1',
+      FORM: 'bah',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 3,
+      DEPREL: 'discourse',
+      DEPS: {},
+      MISC: {},
+    },
+    '2': {
+      ID: '2',
+      FORM: ',',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 1,
+      DEPREL: 'punct',
+      DEPS: {},
+      MISC: {},
+    },
+    '3': {
+      ID: '3',
+      FORM: 'tutoie-',
+      LEMMA: 'tutoie-',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 0,
+      DEPREL: 'root',
+      DEPS: {},
+      MISC: {},
+    },
+    '4': {
+      ID: '4',
+      FORM: 'moi',
+      LEMMA: 'moi',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 0,
+      DEPREL: 'root',
+      DEPS: {},
+      MISC: {},
+    },
+    '5': {
+      ID: '5',
+      FORM: 'quoi',
+      LEMMA: '_',
+      UPOS: '_',
+      XPOS: '_',
+      FEATS: {},
+      HEAD: 3,
+      DEPREL: 'interjection',
+      DEPS: {},
+      MISC: {},
+    },
   },
-  '2': {
-    ID: '2',
-    FORM: ',',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: 1,
-    DEPREL: 'punct',
-    DEPS: {},
-    MISC: {},
-  },
-  '3': {
-    ID: '3',
-    FORM: 'tutoie-',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-  },
-  '4': {
-    ID: '4',
-    FORM: 'moi',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-  },
-  '5': {
-    ID: '5',
-    FORM: 'quoi',
-    LEMMA: '_',
-    UPOS: '_',
-    XPOS: '_',
-    FEATS: {},
-    HEAD: -1,
-    DEPREL: '_',
-    DEPS: {},
-    MISC: {},
-  },
+  groupsJson: {},
 };
 
-const groupsJsonReplacedArrayDeprelBug: NodesJson = {};
+test('replaceArrayOfTokenWithoutSmartBehavior', () => {
+  expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['tutoie-', 'moi'])).toStrictEqual(
+    treeJsonReplacedArrayWithoutSmartBehavior,
+  );
+});
 
-const treeJsonReplacedArrayDeprelBug: TreeJson = {
-  nodesJson: nodesJsonReplacedArrayDeprelBug,
-  groupsJson: groupsJsonReplacedArrayDeprelBug,
-};
-
-test('replaceArrayOfTokensDeprelBug', () => {
-  expect(replaceArrayOfTokens(treeJsonToBeReplaceArrayDeprelBug, [3], ['tutoie-', 'moi'])).toStrictEqual(
-    treeJsonReplacedArrayDeprelBug,
+test('replaceArrayOfTokenWithSmartBehavior', () => {
+  expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['tutoie-', 'moi'], true)).toStrictEqual(
+    treeJsonReplacedArrayWithSmartBehavior,
   );
 });
 

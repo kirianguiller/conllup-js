@@ -315,31 +315,77 @@ export const _isGroupToken = (tokenJson: TokenJson): boolean => {
   return tokenJson.ID.indexOf('-') > -1;
 };
 
+// See https://github.com/Arborator/arborator-frontend/issues/184 for a description of the features
+// ... and the associated behaviors
+type replaceAction_t =
+  | 'SPLIT_ONE_TOKEN_INTO_MANY' // this one also include the ADD_TOKEN_TO_RIGHT feature
+  | 'RENAME_ONE_TOKEN'
+  | 'DELETE_ONE_TOKEN'
+  | 'OTHER';
+
 export const replaceArrayOfTokens = (
   treeJson: TreeJson,
   oldTokensIndexes: number[],
   newTokensForms: string[],
+  smartBehavior: boolean = false,
 ): TreeJson => {
   const newNodesJson = emptyNodesOrGroupsJson();
   const newGroupsJson = emptyNodesOrGroupsJson();
 
+  let replaceAction: replaceAction_t = 'OTHER';
+
+  if (oldTokensIndexes.length === 1) {
+    if (newTokensForms.length === 0) {
+      replaceAction = 'DELETE_ONE_TOKEN';
+    } else if (newTokensForms.length === 1) {
+      replaceAction = 'RENAME_ONE_TOKEN';
+    } else if (newTokensForms.length >= 1) {
+      replaceAction = 'SPLIT_ONE_TOKEN_INTO_MANY';
+    }
+  }
+  // tslint:disable-next-line: no-console
+  console.log(`replaceArrayOfTokens() : detected action = "${replaceAction}"`);
+
+  const differenceInSize = newTokensForms.length - oldTokensIndexes.length;
+  const arrayFirst = oldTokensIndexes[0];
+  const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1];
+
   // add new tokens to new tree
   let newTokenIndex = oldTokensIndexes[0];
   for (const newTokenForm of newTokensForms) {
-    const newTokenJson = emptyTokenJson();
+    let newTokenJson = emptyTokenJson();
+    if (
+      smartBehavior === true &&
+      (replaceAction === 'RENAME_ONE_TOKEN' || replaceAction === 'SPLIT_ONE_TOKEN_INTO_MANY')
+    ) {
+      const oldTokenIndex = oldTokensIndexes[0];
+      newTokenJson = JSON.parse(JSON.stringify(treeJson.nodesJson[oldTokenIndex.toString()]));
+      newTokenJson.HEAD = incrementIndex(
+        'HEAD',
+        newTokenJson.HEAD,
+        arrayFirst,
+        arrayLast,
+        differenceInSize,
+        smartBehavior,
+      );
+    }
     newTokenJson.ID = newTokenIndex.toString();
     newTokenJson.FORM = newTokenForm;
+    newTokenJson.LEMMA = newTokenForm;
     newNodesJson[newTokenJson.ID] = newTokenJson;
     newTokenIndex++;
   }
 
-  // add old tokens with modified index if necessary
-  const differenceInSize = newTokensForms.length - oldTokensIndexes.length;
-  const arrayFirst = oldTokensIndexes[0];
-  const arrayLast = oldTokensIndexes[oldTokensIndexes.length - 1];
+  // add old tokens with corrected indexes
   for (const oldTokenJson of Object.values({ ...treeJson.nodesJson, ...treeJson.groupsJson })) {
     const oldTokenJsonCopy: TokenJson = JSON.parse(JSON.stringify(oldTokenJson));
-    const newTokenJson = incrementIndexesOfToken(oldTokenJsonCopy, arrayFirst, arrayLast, differenceInSize);
+    const newTokenJson = incrementIndexesOfToken(
+      oldTokenJsonCopy,
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
 
     if (newTokenJson.ID !== '-1') {
       if (_isGroupToken(newTokenJson) === true) {
@@ -364,12 +410,27 @@ export const incrementIndexesOfToken = (
   arrayFirst: number,
   arrayLast: number,
   differenceInSize: number,
+  smartBehavior: boolean,
 ): TokenJson => {
   // handle ID
   if (_isGroupToken(tokenJson)) {
     const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split('-');
-    const newTokenJsonId1 = incrementIndex(parseInt(tokenJsonId1, 10), arrayFirst, arrayLast, differenceInSize);
-    const newTokenJsonId2 = incrementIndex(parseInt(tokenJsonId2, 10), arrayFirst, arrayLast, differenceInSize);
+    const newTokenJsonId1 = incrementIndex(
+      'ID',
+      parseInt(tokenJsonId1, 10),
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
+    const newTokenJsonId2 = incrementIndex(
+      'ID',
+      parseInt(tokenJsonId2, 10),
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
     if (newTokenJsonId1 !== -1 && newTokenJsonId2 !== -1) {
       const newGroupId = `${newTokenJsonId1}-${newTokenJsonId2}`;
       tokenJson.ID = newGroupId;
@@ -378,36 +439,52 @@ export const incrementIndexesOfToken = (
     }
   } else {
     const tokenJsonId = tokenJson.ID;
-    const newTokenJsonId = incrementIndex(parseInt(tokenJsonId, 10), arrayFirst, arrayLast, differenceInSize);
+    const newTokenJsonId = incrementIndex(
+      'ID',
+      parseInt(tokenJsonId, 10),
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
     tokenJson.ID = newTokenJsonId.toString();
   }
 
   // handle HEAD
   const tokenJsonHead = tokenJson.HEAD;
   if (tokenJsonHead !== -1) {
-    const newTokenJsonHead = incrementIndex(tokenJsonHead, arrayFirst, arrayLast, differenceInSize);
+    const newTokenJsonHead = incrementIndex(
+      'HEAD',
+      tokenJsonHead,
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
     tokenJson.HEAD = newTokenJsonHead;
     if (tokenJson.HEAD === -1) {
       tokenJson.DEPREL = '_';
     }
   }
-
   return tokenJson;
 };
 
 // Worry : can it return 0 ?
 export const incrementIndex = (
+  idOrHead: 'ID' | 'HEAD',
   index: number,
   arrayFirst: number,
   arrayLast: number,
   differenceInSize: number,
+  smartBehavior: boolean,
 ): number => {
   if (index < arrayFirst) {
     return index;
   } else if (index > arrayLast) {
     return index + differenceInSize;
+  } else if (idOrHead === 'HEAD' && smartBehavior) {
+    return index;
   } else {
-    // if index ===
     return -1;
   }
 };
