@@ -387,6 +387,9 @@ export const incrementIndexesOfToken = (
   if (tokenJsonHead !== -1) {
     const newTokenJsonHead = incrementIndex(tokenJsonHead, arrayFirst, arrayLast, differenceInSize);
     tokenJson.HEAD = newTokenJsonHead;
+    if (tokenJson.HEAD === -1) {
+      tokenJson.DEPREL = '_';
+    }
   }
 
   return tokenJson;

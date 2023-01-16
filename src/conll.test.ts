@@ -471,6 +471,140 @@ test('replaceArrayOfTokens', () => {
   expect(replaceArrayOfTokens(treeJsonToBeReplaceArray, [3], ['a', 'red'])).toStrictEqual(treeJsonReplacedArray);
 });
 
+const nodesJsonToBeReplaceArrayDeprelBug: NodesJson = {
+  '1': {
+    ID: '1',
+    FORM: 'bah',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 3,
+    DEPREL: 'discourse',
+    DEPS: {},
+    MISC: {},
+  },
+  '2': {
+    ID: '2',
+    FORM: ',',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 1,
+    DEPREL: 'punct',
+    DEPS: {},
+    MISC: {},
+  },
+  '3': {
+    ID: '3',
+    FORM: 'tutoie-moi',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 0,
+    DEPREL: 'root',
+    DEPS: {},
+    MISC: {},
+  },
+  '4': {
+    ID: '4',
+    FORM: 'quoi',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 3,
+    DEPREL: 'interjection',
+    DEPS: {},
+    MISC: {},
+  },
+};
+
+const groupsJsonToBeReplaceArrayDeprelBug: NodesJson = {};
+
+const treeJsonToBeReplaceArrayDeprelBug: TreeJson = {
+  nodesJson: nodesJsonToBeReplaceArrayDeprelBug,
+  groupsJson: groupsJsonToBeReplaceArrayDeprelBug,
+};
+
+const nodesJsonReplacedArrayDeprelBug: NodesJson = {
+  '1': {
+    ID: '1',
+    FORM: 'bah',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '2': {
+    ID: '2',
+    FORM: ',',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 1,
+    DEPREL: 'punct',
+    DEPS: {},
+    MISC: {},
+  },
+  '3': {
+    ID: '3',
+    FORM: 'tutoie-',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '4': {
+    ID: '4',
+    FORM: 'moi',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+  '5': {
+    ID: '5',
+    FORM: 'quoi',
+    LEMMA: '_',
+    UPOS: '_',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: -1,
+    DEPREL: '_',
+    DEPS: {},
+    MISC: {},
+  },
+};
+
+const groupsJsonReplacedArrayDeprelBug: NodesJson = {};
+
+const treeJsonReplacedArrayDeprelBug: TreeJson = {
+  nodesJson: nodesJsonReplacedArrayDeprelBug,
+  groupsJson: groupsJsonReplacedArrayDeprelBug,
+};
+
+test('replaceArrayOfTokensDeprelBug', () => {
+  expect(replaceArrayOfTokens(treeJsonToBeReplaceArrayDeprelBug, [3], ['tutoie-', 'moi'])).toStrictEqual(
+    treeJsonReplacedArrayDeprelBug,
+  );
+});
+
 const sentenceJsonToReconstructText: SentenceJson = {
   metaJson: emptyMetaJson(),
   treeJson: {

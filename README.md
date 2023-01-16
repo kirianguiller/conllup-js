@@ -9,6 +9,9 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+
+### 2.0.3
+- fix : when tokens are replaced/deleted with `replaceArrayOfTokens()` method, the tokens pointing to these tokens only got the HEAD deleted but not the DEPREL. It now delet both of them so the outputted conllu is valid
 ### 2.0.1 
 add compatibility for node import (from 3rd party codebase)
 ### 2.0.0
