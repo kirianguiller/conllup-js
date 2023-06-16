@@ -9,6 +9,10 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+### 3.0
+- Change most of variables name to better suit with conllup-py porting 
+- modify _featuresConllToJson() so it order features in the order [specified by UD](https://universaldependencies.org/format.html) (thank you @bguil): 
+> In sorting, uppercase letters are considered identical to their lowercase counterparts.
 ### 2.1
 - add : smart behavior for `replaceArrayOfTokens()` when a token split is detected. New tokens get their feats replicated from original splitted token, and preserve incoming governors relations
 ### 2.0.3

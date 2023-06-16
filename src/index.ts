@@ -5,7 +5,7 @@ import {
   emptyMetaJson,
   emptyTreeJson,
   emptyTokenJson,
-  emptyFeatureJson,
+  emptyFeaturesJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
 } from './conll';
@@ -17,7 +17,7 @@ export default {
   emptyMetaJson,
   emptyTreeJson,
   emptyTokenJson,
-  emptyFeatureJson,
+  emptyFeaturesJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
 };

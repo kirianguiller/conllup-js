@@ -4,6 +4,7 @@
     "tslint-config-prettier"
   ],
   "rules": {
-    "no-string-literal": false
+    "no-string-literal": false,
+    "class-name": false
   }
 }

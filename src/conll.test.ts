@@ -1,38 +1,44 @@
 import {
   _seperateMetaAndTreeFromSentenceConll,
-  _tabDictToJson,
+  _featuresConllToJson,
   _metaConllLinesToJson,
-  _tokenLineToJson,
-  _extractTokenTabData,
+  _tokenConllToJson,
+  _decodeTabData,
   _treeConllLinesToJson,
   sentenceConllToJson,
-  _tabJsonToDict,
-  _tabDataJsonToConll,
-  _tokenJsonToLine,
+  _featuresJsonToConll,
+  _encodeTabData,
+  _tokenJsonToConll,
   _treeJsonToConll,
   _metaJsonToConll,
   _compareTokenIndexes,
   sentenceJsonToConll,
-  MetaJson,
-  NodesJson,
-  SentenceJson,
-  TokenJson,
+  metaJson_T,
+  nodesJson_T,
+  sentenceJson_T,
+  tokenJson_T,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
-  GroupsJson,
-  emptyTreeJson,
+  groupsJson_T,
   emptyMetaJson,
-  TreeJson,
+  treeJson_T,
   emptyNodesOrGroupsJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
-const featureJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
+const featuresJson = { feat_key1: 'feat_value1', feat_key2: 'feat_value2' };
+const featureConllReverseOrder = 'feat_key2=feat_value2|feat_key1=feat_value1';
+const featuresJsonWithLowerAndUpperCase = {
+  feat_key1: 'feat_value1',
+  feat_key3: 'feat_value3',
+  Feat_key2: 'feat_value2',
+};
+const featureConllWithLowerAndUpperCase = 'feat_key1=feat_value1|Feat_key2=feat_value2|feat_key3=feat_value3';
 
-const tokenLine: string =
+const tokenConll: string =
   '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
 
-const nodeJson: TokenJson = {
+const tokenJson: tokenJson_T = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -45,15 +51,15 @@ const nodeJson: TokenJson = {
   MISC: { misc_key: 'misc_value' },
 };
 
-const metaJson: MetaJson = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
-const groupsJson: GroupsJson = emptyNodesOrGroupsJson();
-const treeJson: TreeJson = { nodesJson: { 1: nodeJson }, groupsJson };
+const metaJson: metaJson_T = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
+const groupsJson: groupsJson_T = emptyNodesOrGroupsJson();
+const treeJson: treeJson_T = { nodesJson: { '1': tokenJson }, groupsJson };
 
-const sentenceJson: SentenceJson = { metaJson, treeJson };
+const sentenceJson: sentenceJson_T = { metaJson, treeJson };
 
 const metaConll: string = '# meta_key = meta_value\n# meta_key2 = meta_value2';
 const metaConllLines: string[] = metaConll.split('\n');
-const treeConll: string = `${tokenLine}`;
+const treeConll: string = `${tokenConll}`;
 const treeConllLines: string[] = treeConll.split('\n');
 const sentenceConll: string = `${metaConll}\n${treeConll}`;
 const untrimmedMetaConll: string = '# meta_key = meta_value\n       # meta_key2 = meta_value2';
@@ -63,7 +69,7 @@ const untrimmedSentenceConll: string = `${untrimmedMetaConll}\n${treeConll}`;
 // checks for hyphen instead of undescore
 const hyphenInsteadOfUnderscoreLineConll: string = '1	form	lemma	upos	–	–	0	deprel	_	_';
 const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
-const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
+const hyphenInsteadOfUnderscoreLineJson: tokenJson_T = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -79,7 +85,7 @@ const hyphenInsteadOfUnderscoreLineJson: TokenJson = {
 // exclude FORM and LEMMA from hyphen-to-underscore replacement
 // (there could be a literal hyphen in the text!)
 const preserveHyphenInFormLemmaLineConll: string = '1	-	–	upos	_	_	0	deprel	_	_';
-const preserveHyphenInFormLemmaLineJson: TokenJson = {
+const preserveHyphenInFormLemmaLineJson: tokenJson_T = {
   ID: '1',
   FORM: '-',
   LEMMA: '–',
@@ -95,7 +101,7 @@ const preserveHyphenInFormLemmaLineJson: TokenJson = {
 // checks for "=" symbol is misc or feature field
 const equalSymbolInMiscOrFeatureTokenLine: string = '1	form	lemma	upos	_	person=first=second	_	_	_	_';
 // const hyphenInsteadOfUnderscoreLineConllCorrected: string = '1	form	lemma	upos	_	_	0	deprel	_	_';
-const equalSymbolInMiscOrFeatureTokenJson: TokenJson = {
+const equalSymbolInMiscOrFeatureTokenJson: tokenJson_T = {
   ID: '1',
   FORM: 'form',
   LEMMA: 'lemma',
@@ -114,7 +120,7 @@ const equalSymbolInMiscOrFeatureTokenJson: TokenJson = {
 // 2    's  's  _ _ _ _ _ _ _
 const groupTokenLine: string = "1-2	it's	it's	upos	_	_	_	deprel	_	_";
 
-const groupTokenJson: TokenJson = {
+const groupTokenJson: tokenJson_T = {
   ID: '1-2',
   FORM: "it's",
   LEMMA: "it's",
@@ -142,34 +148,44 @@ test('_seperateMetaAndTreeFromSentenceConll', () => {
   });
 });
 
-test('_tabDictToJson', () => {
-  expect(_tabDictToJson(featureConll)).toStrictEqual(featureJson);
-  expect(_tabDictToJson('_')).toStrictEqual({});
+test('_featuresConllToJson', () => {
+  expect(_featuresConllToJson(featureConll)).toStrictEqual(featuresJson);
+  expect(_featuresConllToJson('_')).toStrictEqual({});
+});
+
+test('_featuresConllToJsonAndBack', () => {
+  expect(_featuresJsonToConll(_featuresConllToJson(featureConll))).toStrictEqual(featureConll);
+  expect(_featuresJsonToConll(_featuresConllToJson(featureConllReverseOrder))).toStrictEqual(featureConll);
+  expect(_featuresJsonToConll(_featuresConllToJson('_'))).toStrictEqual('_');
+});
+
+test('_featuresJsonToConllSortingOrder', () => {
+  expect(_featuresJsonToConll(featuresJsonWithLowerAndUpperCase)).toStrictEqual(featureConllWithLowerAndUpperCase);
 });
 
 test('_metaConllLinesToJson', () => {
   expect(_metaConllLinesToJson(metaConllLines)).toStrictEqual(metaJson);
 });
 
-test('_extractTokenTabData', () => {
-  expect(_extractTokenTabData('3', 'int')).toBe(3);
-  expect(_extractTokenTabData('3', 'str')).toBe('3');
+test('_decodeTabData', () => {
+  expect(_decodeTabData('3', 'int')).toBe(3);
+  expect(_decodeTabData('3', 'str')).toBe('3');
   expect(() => {
-    _extractTokenTabData('3', 'fake_type');
+    _decodeTabData('3', 'fake_type');
   }).toThrowError('fake_type is not a correct type');
 });
 
-test('_tokenLineToJson', () => {
-  expect(_tokenLineToJson(tokenLine)).toStrictEqual(nodeJson);
-  expect(_tokenLineToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
-  expect(_tokenLineToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
-  expect(_tokenLineToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
-  expect(_tokenLineToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
+test('_tokenConllToJson', () => {
+  expect(_tokenConllToJson(tokenConll)).toStrictEqual(tokenJson);
+  expect(_tokenConllToJson(hyphenInsteadOfUnderscoreLineConll)).toStrictEqual(hyphenInsteadOfUnderscoreLineJson);
+  expect(_tokenConllToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
+  expect(_tokenConllToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
+  expect(_tokenConllToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
   expect(() => {
-    _tokenLineToJson(incompleteSmallerTokenLine);
+    _tokenConllToJson(incompleteSmallerTokenLine);
   }).toThrowError();
   expect(() => {
-    _tokenLineToJson(incompleteBiggerTokenLine);
+    _tokenConllToJson(incompleteBiggerTokenLine);
   }).toThrowError();
 });
 
@@ -181,22 +197,19 @@ test('sentenceConllToJson', () => {
   expect(sentenceConllToJson(sentenceConll)).toStrictEqual(sentenceJson);
 });
 
-test('_tabJsonToDict', () => {
-  expect(_tabJsonToDict(featureJson)).toBe(featureConll);
-  expect(_tabJsonToDict({})).toBe('_');
+test('_featuresJsonToConll', () => {
+  expect(_featuresJsonToConll(featuresJson)).toBe(featureConll);
+  expect(_featuresJsonToConll({})).toBe('_');
 });
 
-test('_tabDataJsonToConll', () => {
-  expect(_tabDataJsonToConll(3, 'int')).toBe('3');
-  expect(_tabDataJsonToConll('3', 'str')).toBe('3');
-  expect(() => {
-    _tabDataJsonToConll('3', 'fake_type');
-  }).toThrowError('fake_type is not a correct type');
+test('_encodeTabData', () => {
+  expect(_encodeTabData(3)).toBe('3');
+  expect(_encodeTabData('3')).toBe('3');
 });
 
-test('_tokenJsonToLine', () => {
-  expect(_tokenJsonToLine(nodeJson)).toStrictEqual(tokenLine);
-  expect(_tokenJsonToLine(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(
+test('_tokenJsonToConll', () => {
+  expect(_tokenJsonToConll(tokenJson)).toStrictEqual(tokenConll);
+  expect(_tokenJsonToConll(hyphenInsteadOfUnderscoreLineJson)).toStrictEqual(
     hyphenInsteadOfUnderscoreLineConllCorrected,
   );
 });
@@ -229,7 +242,7 @@ test('conllToJsonToConll', () => {
   expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll);
 });
 
-const nodesJsonToBeReplaceArray: NodesJson = {
+const nodesJsonToBeReplaceArray: nodesJson_T = {
   '1': {
     ID: '1',
     FORM: 'I',
@@ -304,7 +317,7 @@ const nodesJsonToBeReplaceArray: NodesJson = {
   },
 };
 
-const groupsJsonToBeReplaceArray: NodesJson = {
+const groupsJsonToBeReplaceArray: nodesJson_T = {
   '1-2': {
     ID: '1-2',
     FORM: 'I eat',
@@ -343,12 +356,12 @@ const groupsJsonToBeReplaceArray: NodesJson = {
   },
 };
 
-const treeJsonToBeReplaceArrayWithGroup: TreeJson = {
+const treeJsonToBeReplaceArrayWithGroup: treeJson_T = {
   nodesJson: nodesJsonToBeReplaceArray,
   groupsJson: groupsJsonToBeReplaceArray,
 };
 
-const nodesJsonReplacedArray: NodesJson = {
+const nodesJsonReplacedArray: nodesJson_T = {
   '1': {
     ID: '1',
     FORM: 'I',
@@ -435,7 +448,7 @@ const nodesJsonReplacedArray: NodesJson = {
   },
 };
 
-const groupsJsonReplacedArray: NodesJson = {
+const groupsJsonReplacedArray: nodesJson_T = {
   '1-2': {
     ID: '1-2',
     FORM: 'I eat',
@@ -462,7 +475,7 @@ const groupsJsonReplacedArray: NodesJson = {
   },
 };
 
-const treeJsonReplacedArrayWithGroup: TreeJson = {
+const treeJsonReplacedArrayWithGroup: treeJson_T = {
   nodesJson: nodesJsonReplacedArray,
   groupsJson: groupsJsonReplacedArray,
 };
@@ -473,7 +486,7 @@ test('replaceArrayOfTokensWithGroupWithSmartBehavior', () => {
   );
 });
 
-const treeJsonToBeReplaceArray: TreeJson = {
+const treeJsonToBeReplaceArray: treeJson_T = {
   nodesJson: {
     '1': {
       ID: '1',
@@ -527,7 +540,7 @@ const treeJsonToBeReplaceArray: TreeJson = {
   groupsJson: {},
 };
 
-const treeJsonReplacedArrayWithoutSmartBehavior: TreeJson = {
+const treeJsonReplacedArrayWithoutSmartBehavior: treeJson_T = {
   nodesJson: {
     '1': {
       ID: '1',
@@ -593,7 +606,7 @@ const treeJsonReplacedArrayWithoutSmartBehavior: TreeJson = {
   groupsJson: {},
 };
 
-const treeJsonReplacedArrayWithSmartBehavior: TreeJson = {
+const treeJsonReplacedArrayWithSmartBehavior: treeJson_T = {
   nodesJson: {
     '1': {
       ID: '1',
@@ -671,7 +684,7 @@ test('replaceArrayOfTokenWithSmartBehavior', () => {
   );
 });
 
-const sentenceJsonToReconstructText: SentenceJson = {
+const sentenceJsonToReconstructText: sentenceJson_T = {
   metaJson: emptyMetaJson(),
   treeJson: {
     nodesJson: {
@@ -770,7 +783,7 @@ test('constructTextFromTreeJson', () => {
   expect(constructTextFromTreeJson(sentenceJsonToReconstructText.treeJson)).toStrictEqual('I eat a red apple ');
 });
 
-const sentenceJsonToReconstructTextWithSpacesAfter: SentenceJson = {
+const sentenceJsonToReconstructTextWithSpacesAfter: sentenceJson_T = {
   metaJson: emptyMetaJson(),
   treeJson: {
     nodesJson: {

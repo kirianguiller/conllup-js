@@ -1,73 +1,81 @@
-export interface FeatureJson {
+export interface featuresJson_T {
   [key: string]: string;
 }
 
-export type TokenJson = {
+export type tokenJson_T = {
   ID: string;
   FORM: string;
   LEMMA: string;
   UPOS: string;
   XPOS: string;
-  FEATS: FeatureJson;
+  FEATS: featuresJson_T;
   HEAD: number;
   DEPREL: string;
-  DEPS: FeatureJson;
-  MISC: FeatureJson;
-  [key: string]: string | number | FeatureJson;
+  DEPS: featuresJson_T;
+  MISC: featuresJson_T;
+  [key: string]: string | number | featuresJson_T;
 };
 
-export interface NodesJson {
-  [key: string]: TokenJson;
+export interface nodesJson_T {
+  [key: string]: tokenJson_T;
 }
 
-export interface GroupsJson {
-  [key: string]: TokenJson;
+export interface groupsJson_T {
+  [key: string]: tokenJson_T;
 }
 
-export interface MetaJson {
+export interface metaJson_T {
   [key: string]: string | number;
 }
 
-export interface TreeJson {
-  nodesJson: NodesJson;
-  groupsJson: GroupsJson;
+export interface treeJson_T {
+  nodesJson: nodesJson_T;
+  groupsJson: groupsJson_T;
 }
 
-export interface SentenceJson {
-  treeJson: TreeJson;
-  metaJson: MetaJson;
+export interface sentenceJson_T {
+  treeJson: treeJson_T;
+  metaJson: metaJson_T;
 }
 
-export const emptyFeatureJson = (): FeatureJson => ({});
+export const emptyFeaturesJson = (): featuresJson_T => ({});
 
-export const emptyTokenJson = (): TokenJson => ({
+export const emptyTokenJson = (): tokenJson_T => ({
   ID: '_',
   FORM: '_',
   LEMMA: '_',
   UPOS: '_',
   XPOS: '_',
-  FEATS: emptyFeatureJson(),
+  FEATS: emptyFeaturesJson(),
   HEAD: -1,
   DEPREL: '_',
-  DEPS: emptyFeatureJson(),
-  MISC: emptyFeatureJson(),
+  DEPS: emptyFeaturesJson(),
+  MISC: emptyFeaturesJson(),
 });
 
-export const emptyMetaJson = (): MetaJson => ({});
+export const emptyMetaJson = (): metaJson_T => ({});
 
-export const emptyNodesOrGroupsJson = (): NodesJson => ({});
+export const emptyNodesOrGroupsJson = (): nodesJson_T => ({});
 
-export const emptyTreeJson = (): TreeJson => ({
+export const emptyTreeJson = (): treeJson_T => ({
   nodesJson: emptyNodesOrGroupsJson(),
   groupsJson: emptyNodesOrGroupsJson(),
 });
 
-export const emptySentenceJson = (): SentenceJson => ({
+export const emptySentenceJson = (): sentenceJson_T => ({
   metaJson: emptyMetaJson(),
   treeJson: emptyTreeJson(),
 });
 
-const CONLL_STRUCTURE: { [key: number]: { [key: string]: string } } = {
+type tabType_T = 'str' | 'int' | 'dict';
+type tabLabel_T = 'ID' | 'FORM' | 'LEMMA' | 'UPOS' | 'XPOS' | 'FEATS' | 'HEAD' | 'DEPREL' | 'DEPS' | 'MISC';
+
+interface tabMeta_T {
+  label: tabLabel_T;
+  type: tabType_T;
+}
+
+const CONLL_STRUCTURE: { [key: number]: tabMeta_T } = {
   0: { label: 'ID', type: 'str' },
   1: { label: 'FORM', type: 'str' },
   2: { label: 'LEMMA', type: 'str' },
@@ -104,8 +112,8 @@ export const _seperateMetaAndTreeFromSentenceConll = (sentenceConll: string) => 
   return { metaLines, treeLines };
 };
 
-export const _metaConllLinesToJson = (metaConllLines: string[]): MetaJson => {
-  const metaJson: MetaJson = emptyMetaJson();
+export const _metaConllLinesToJson = (metaConllLines: string[]): metaJson_T => {
+  const metaJson: metaJson_T = emptyMetaJson();
   for (const metaCouple of metaConllLines) {
     const [metaKey, metaValue] = metaCouple.split(' = ');
     const trimmedMetaKey = metaKey.slice(2);
@@ -113,27 +121,28 @@ export const _metaConllLinesToJson = (metaConllLines: string[]): MetaJson => {
   }
   return metaJson;
 };
-export const _tabDictToJson = (featureConll: string): FeatureJson => {
-  const featureJson: FeatureJson = emptyFeatureJson();
-  if (featureConll === '_') {
-    return featureJson;
+
+export const _featuresConllToJson = (featuresConll: string): featuresJson_T => {
+  const featuresJson: featuresJson_T = emptyFeaturesJson();
+  if (featuresConll === '_') {
+    return featuresJson;
   }
-  const splittedFeaturesConll: string[] = featureConll.split('|');
+  const splittedFeaturesConll: string[] = featuresConll.split('|');
   for (const featureCouple of splittedFeaturesConll) {
     const splittedFeature = featureCouple.split('=');
     const featureKey = splittedFeature[0];
     const featureValue = splittedFeature.slice(1).join('=');
-    featureJson[featureKey] = featureValue;
+    featuresJson[featureKey] = featureValue;
   }
-  return featureJson;
+  return featuresJson;
 };
 
-const _normalizeNull = (tokenTabData: string, tabMeta: { [key: string]: string }): string => {
+const _normalizeHyphensInTab = (tokenTabData: string, tabMeta: tabMeta_T): string => {
   if (['FORM', 'LEMMA'].includes(tabMeta['label'])) return tokenTabData;
   else if (['-', '–'].includes(tokenTabData)) return '_';
   else return tokenTabData;
 };
-export const _extractTokenTabData = (tokenTabData: string, type: string): string | number | FeatureJson => {
+export const _decodeTabData = (tokenTabData: string, type: string): string | number | featuresJson_T => {
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
@@ -143,40 +152,40 @@ export const _extractTokenTabData = (tokenTabData: string, type: string): string
       return parseInt(tokenTabData, 10);
     }
   } else if (type === 'dict') {
-    return _tabDictToJson(tokenTabData);
+    return _featuresConllToJson(tokenTabData);
   } else {
     throw new Error(`${type} is not a correct type`);
   }
 };
 
-export const _tokenLineToJson = (tokenLine: string): TokenJson => {
-  const trimmedTokenLine: string = tokenLine.trim();
+export const _tokenConllToJson = (tokenConll: string): tokenJson_T => {
+  const trimmedTokenLine: string = tokenConll.trim();
   const splittedTokenLine: string[] = trimmedTokenLine.split('\t');
   if (splittedTokenLine.length !== 10) {
     throw new Error(
-      `CONLL PARSING ERROR : line "${tokenLine}" is not valid, ${splittedTokenLine.length} columns found instead of 10`,
+      `CONLL PARSING ERROR : line "${tokenConll}" is not valid, ${splittedTokenLine.length} columns found instead of 10`,
     );
   }
-  const tokenJson: TokenJson = emptyTokenJson();
+  const tokenJson: tokenJson_T = emptyTokenJson();
   for (const tabIndex in CONLL_STRUCTURE) {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STRUCTURE[tabIndex];
-      const tabData = _normalizeNull(splittedTokenLine[tabIndex], tabMeta);
+      const tabData = _normalizeHyphensInTab(splittedTokenLine[tabIndex], tabMeta);
 
       const label: string = tabMeta['label'];
       const type: string = tabMeta['type'];
-      tokenJson[label] = _extractTokenTabData(tabData, type);
+      tokenJson[label] = _decodeTabData(tabData, type);
     }
   }
 
   return tokenJson;
 };
 
-export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
+export const _treeConllLinesToJson = (treeConllLines: string[]): treeJson_T => {
   const treeJson = emptyTreeJson();
 
-  for (const tokenLine of treeConllLines) {
-    const tokenJson = _tokenLineToJson(tokenLine);
+  for (const tokenConll of treeConllLines) {
+    const tokenJson = _tokenConllToJson(tokenConll);
     if (_isGroupToken(tokenJson) === true) {
       // the token is a group token
       treeJson.groupsJson[tokenJson.ID] = tokenJson;
@@ -188,13 +197,13 @@ export const _treeConllLinesToJson = (treeConllLines: string[]): TreeJson => {
   return treeJson;
 };
 
-export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
+export const sentenceConllToJson = (sentenceConll: string): sentenceJson_T => {
   if (typeof sentenceConll !== 'string') {
     throw new TypeError(
       `parameter \`sentenceConll\` in sentenceConllToJson() is not a string (got \`${typeof sentenceConll}\`)`,
     );
   }
-  const sentenceJson: SentenceJson = emptySentenceJson();
+  const sentenceJson: sentenceJson_T = emptySentenceJson();
   const { metaLines, treeLines } = _seperateMetaAndTreeFromSentenceConll(sentenceConll);
 
   sentenceJson.metaJson = _metaConllLinesToJson(metaLines);
@@ -203,49 +212,46 @@ export const sentenceConllToJson = (sentenceConll: string): SentenceJson => {
   return sentenceJson;
 };
 
-export const _tabJsonToDict = (featureJson: FeatureJson): string => {
+export const _featuresJsonToConll = (featuresJson: featuresJson_T): string => {
   const splittedFeatureConll: string[] = [];
-  for (const featureKey in featureJson) {
-    if (featureJson.hasOwnProperty(featureKey)) {
-      const featureValue = featureJson[featureKey];
+  Object.keys(featuresJson)
+    .sort((a, b) => {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    })
+    .forEach((featureKey, i) => {
+      const featureValue = featuresJson[featureKey];
       splittedFeatureConll.push(`${featureKey}=${featureValue}`);
-    } else {
-      throw Error(`featureJson don't possess the key '${featureKey}'`);
-    }
+    });
+  let featuresConll = splittedFeatureConll.join('|');
+  if (featuresConll === '') {
+    featuresConll = '_';
   }
-  let featureConll = splittedFeatureConll.join('|');
-  if (featureConll === '') {
-    featureConll = '_';
-  }
-  return featureConll;
+  return featuresConll;
 };
 
-export const _tabDataJsonToConll = (tabData: string | number | FeatureJson, type: string) => {
-  if (type === 'str') {
-    return tabData as string;
-  } else if (type === 'int') {
+export const _encodeTabData = (tabData: string | number | featuresJson_T): string => {
+  if (typeof tabData === 'string') {
+    return tabData;
+  } else if (typeof tabData === 'number') {
     if (tabData === -1) {
       return '_';
     } else {
       return tabData.toString() as string;
     }
-  } else if (type === 'dict') {
-    return _tabJsonToDict(tabData as FeatureJson);
   } else {
-    throw new Error(`${type} is not a correct type`);
+    return _featuresJsonToConll(tabData as featuresJson_T);
   }
 };
 
-export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
+export const _tokenJsonToConll = (tokenJson: tokenJson_T): string => {
   const splittedTokenConll: string[] = [];
   for (const tabIndex in CONLL_STRUCTURE) {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STRUCTURE[tabIndex];
-      const tabLabel: string = tabMeta['label'];
-      const tabtype: string = tabMeta['type'];
+      const tabLabel = tabMeta.label;
 
-      const tabDataJson = tokenJson[tabLabel] as string | number | FeatureJson;
-      const tabDataConll = _tabDataJsonToConll(tabDataJson, tabtype);
+      const tabDataJson = tokenJson[tabLabel];
+      const tabDataConll = _encodeTabData(tabDataJson);
       splittedTokenConll.push(tabDataConll);
     }
   }
@@ -253,7 +259,7 @@ export const _tokenJsonToLine = (tokenJson: TokenJson): string => {
   return tokenConll;
 };
 
-export const _treeJsonToConll = (treeJson: TreeJson): string => {
+export const _treeJsonToConll = (treeJson: treeJson_T): string => {
   const treeConllLines: string[] = [];
   const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson };
   const tokenIndexes = Object.values(tokensJson).map((tokenJson) => {
@@ -262,7 +268,7 @@ export const _treeJsonToConll = (treeJson: TreeJson): string => {
   const sortedTokenIndexes = _sortTokenIndexes(tokenIndexes);
   for (const tokenIndex of sortedTokenIndexes) {
     const tokenJson = tokensJson[tokenIndex];
-    const tokenConll = _tokenJsonToLine(tokenJson);
+    const tokenConll = _tokenJsonToConll(tokenJson);
     treeConllLines.push(tokenConll);
   }
 
@@ -270,7 +276,7 @@ export const _treeJsonToConll = (treeJson: TreeJson): string => {
   return treeConll;
 };
 
-export const _metaJsonToConll = (metaJson: MetaJson): string => {
+export const _metaJsonToConll = (metaJson: metaJson_T): string => {
   const metaConllLines: string[] = [];
 
   for (const metaKey in metaJson) {
@@ -288,7 +294,7 @@ export const _metaJsonToConll = (metaJson: MetaJson): string => {
   return metaConll;
 };
 
-export const sentenceJsonToConll = (sentenceJson: SentenceJson): string => {
+export const sentenceJsonToConll = (sentenceJson: sentenceJson_T): string => {
   const metaConll = _metaJsonToConll(sentenceJson.metaJson);
   const treeConll = _treeJsonToConll(sentenceJson.treeJson);
   if (metaConll === '') {
@@ -311,7 +317,7 @@ export const _compareTokenIndexes = (a: string, b: string): number => {
   }
 };
 
-export const _isGroupToken = (tokenJson: TokenJson): boolean => {
+export const _isGroupToken = (tokenJson: tokenJson_T): boolean => {
   return tokenJson.ID.indexOf('-') > -1;
 };
 
@@ -324,11 +330,11 @@ type replaceAction_t =
   | 'OTHER';
 
 export const replaceArrayOfTokens = (
-  treeJson: TreeJson,
+  treeJson: treeJson_T,
   oldTokensIndexes: number[],
   newTokensForms: string[],
   smartBehavior: boolean = false,
-): TreeJson => {
+): treeJson_T => {
   const newNodesJson = emptyNodesOrGroupsJson();
   const newGroupsJson = emptyNodesOrGroupsJson();
 
@@ -378,7 +384,7 @@ export const replaceArrayOfTokens = (
 
   // add old tokens with corrected indexes
   for (const oldTokenJson of Object.values({ ...treeJson.nodesJson, ...treeJson.groupsJson })) {
-    const oldTokenJsonCopy: TokenJson = JSON.parse(JSON.stringify(oldTokenJson));
+    const oldTokenJsonCopy: tokenJson_T = JSON.parse(JSON.stringify(oldTokenJson));
     const newTokenJson = incrementIndexesOfToken(
       oldTokenJsonCopy,
       arrayFirst,
@@ -397,7 +403,7 @@ export const replaceArrayOfTokens = (
       }
     }
   }
-  const newTreeJson: TreeJson = {
+  const newTreeJson: treeJson_T = {
     nodesJson: newNodesJson,
     groupsJson: newGroupsJson,
   };
@@ -406,12 +412,12 @@ export const replaceArrayOfTokens = (
 
 // TODO GROUP TOKEN REFACTOR
 export const incrementIndexesOfToken = (
-  tokenJson: TokenJson,
+  tokenJson: tokenJson_T,
   arrayFirst: number,
   arrayLast: number,
   differenceInSize: number,
   smartBehavior: boolean,
-): TokenJson => {
+): tokenJson_T => {
   // handle ID
   if (_isGroupToken(tokenJson)) {
     const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split('-');
@@ -498,7 +504,7 @@ const mappingSpacesAfter: [string, string][] = [
   ['\\\\r', '\r'],
 ];
 
-export const constructTextFromTreeJson = (treeJson: TreeJson) => {
+export const constructTextFromTreeJson = (treeJson: treeJson_T) => {
   let sentence = '';
   for (const tokenId in treeJson.nodesJson) {
     if (treeJson.nodesJson[tokenId] && _isGroupToken(treeJson.nodesJson[tokenId]) === false) {
