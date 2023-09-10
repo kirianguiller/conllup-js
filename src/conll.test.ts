@@ -23,6 +23,7 @@ import {
   emptyMetaJson,
   treeJson_T,
   emptyNodesOrGroupsJson,
+  _depsConllToJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -35,8 +36,7 @@ const featuresJsonWithLowerAndUpperCase = {
 };
 const featureConllWithLowerAndUpperCase = 'feat_key1=feat_value1|Feat_key2=feat_value2|feat_key3=feat_value3';
 
-const tokenConll: string =
-  '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value';
+const tokenConll: string = '1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\t1:mod\tmisc_key=misc_value';
 
 const tokenJson: tokenJson_T = {
   ID: '1',
@@ -47,7 +47,7 @@ const tokenJson: tokenJson_T = {
   FEATS: { feat_key: 'feat_value' },
   HEAD: 2,
   DEPREL: 'deprel',
-  DEPS: { dep_key: 'dep_value' },
+  DEPS: { '1': 'mod' },
   MISC: { misc_key: 'misc_value' },
 };
 
@@ -171,7 +171,7 @@ test('_decodeTabData', () => {
   expect(_decodeTabData('3', 'int')).toBe(3);
   expect(_decodeTabData('3', 'str')).toBe('3');
   expect(() => {
-    _decodeTabData('3', 'fake_type');
+    _decodeTabData('3', 'fake_type' as any);
   }).toThrowError('fake_type is not a correct type');
 });
 
@@ -203,8 +203,8 @@ test('_featuresJsonToConll', () => {
 });
 
 test('_encodeTabData', () => {
-  expect(_encodeTabData(3)).toBe('3');
-  expect(_encodeTabData('3')).toBe('3');
+  expect(_encodeTabData(3, 'int')).toBe('3');
+  expect(_encodeTabData('3', 'str')).toBe('3');
 });
 
 test('_tokenJsonToConll', () => {
@@ -235,8 +235,8 @@ test('_compareTokenIndexes', () => {
 
 const conllToJsonToConll = `# meta_key = meta_value
 1-2\tform\t_\t_\t_\t_\t_\t_\t_\t_
-1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tSpacesAfter=\\\\t
-2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key=dep_value\tmisc_key=misc_value`;
+1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key:dep_value\tSpacesAfter=\\\\t
+2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key:dep_value\tmisc_key=misc_value`;
 
 test('conllToJsonToConll', () => {
   expect(sentenceJsonToConll(sentenceConllToJson(conllToJsonToConll))).toBe(conllToJsonToConll);
@@ -251,8 +251,8 @@ const nodesJsonToBeReplaceArray: nodesJson_T = {
     XPOS: '_',
     FEATS: {},
     HEAD: 4,
-    DEPREL: '_',
-    DEPS: {},
+    DEPREL: 'mod',
+    DEPS: { '4': 'mod', '2': 'subj' },
     MISC: {},
   },
   '2': {
@@ -370,8 +370,8 @@ const nodesJsonReplacedArray: nodesJson_T = {
     XPOS: '_',
     FEATS: {},
     HEAD: 5,
-    DEPREL: '_',
-    DEPS: {},
+    DEPREL: 'mod',
+    DEPS: { '5': 'mod', '2': 'subj' },
     MISC: {},
   },
   '2': {
@@ -838,4 +838,12 @@ test('sentenceConllToJson_throw_error', () => {
   expect(() => {
     sentenceConllToJson(undefined as any);
   }).toThrow('parameter `sentenceConll` in sentenceConllToJson() is not a string (got `undefined`)');
+});
+
+// Check for newly added deps (enhanced UD)
+
+test('_depsConllToJson', () => {
+  expect(_depsConllToJson('1:dep')).toStrictEqual({ '1': 'dep' });
+  expect(_depsConllToJson('1:dep:blop')).toStrictEqual({ '1': 'dep:blop' });
+  expect(_depsConllToJson('1:dep:blop|2:mod')).toStrictEqual({ '1': 'dep:blop', '2': 'mod' });
 });

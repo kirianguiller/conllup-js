@@ -2,6 +2,10 @@ export interface featuresJson_T {
   [key: string]: string;
 }
 
+export interface depsJson_T {
+  [key: string]: string;
+}
+
 export type tokenJson_T = {
   ID: string;
   FORM: string;
@@ -11,15 +15,18 @@ export type tokenJson_T = {
   FEATS: featuresJson_T;
   HEAD: number;
   DEPREL: string;
-  DEPS: featuresJson_T;
+  DEPS: depsJson_T;
   MISC: featuresJson_T;
-  [key: string]: string | number | featuresJson_T;
+  [key: string]: string | number | featuresJson_T | depsJson_T;
 };
 
 export interface nodesJson_T {
   [key: string]: tokenJson_T;
 }
 
+export interface enhancedNodesJson_T {
+  [key: string]: tokenJson_T;
+}
 export interface groupsJson_T {
   [key: string]: tokenJson_T;
 }
@@ -39,6 +46,7 @@ export interface sentenceJson_T {
 }
 
 export const emptyFeaturesJson = (): featuresJson_T => ({});
+export const emptyDepsJson = (): depsJson_T => ({});
 
 export const emptyTokenJson = (): tokenJson_T => ({
   ID: '_',
@@ -67,7 +75,7 @@ export const emptySentenceJson = (): sentenceJson_T => ({
   treeJson: emptyTreeJson(),
 });
 
-type tabType_T = 'str' | 'int' | 'dict';
+type tabType_T = 'str' | 'int' | 'dict' | 'deps';
 type tabLabel_T = 'ID' | 'FORM' | 'LEMMA' | 'UPOS' | 'XPOS' | 'FEATS' | 'HEAD' | 'DEPREL' | 'DEPS' | 'MISC';
 
 interface tabMeta_T {
@@ -84,7 +92,7 @@ const CONLL_STRUCTURE: { [key: number]: tabMeta_T } = {
   5: { label: 'FEATS', type: 'dict' },
   6: { label: 'HEAD', type: 'int' },
   7: { label: 'DEPREL', type: 'str' },
-  8: { label: 'DEPS', type: 'dict' },
+  8: { label: 'DEPS', type: 'deps' },
   9: { label: 'MISC', type: 'dict' },
 };
 
@@ -137,12 +145,30 @@ export const _featuresConllToJson = (featuresConll: string): featuresJson_T => {
   return featuresJson;
 };
 
+export const _depsConllToJson = (depsConll: string): depsJson_T => {
+  const depsJson: depsJson_T = emptyFeaturesJson();
+  if (depsConll === '_') {
+    return depsJson;
+  }
+  const splittedDepsConll: string[] = depsConll.split('|');
+  for (const depsCouple of splittedDepsConll) {
+    const splittedDeps = depsCouple.split(':');
+    const depsKey = splittedDeps[0];
+    const depsValue = splittedDeps.slice(1).join(':');
+    depsJson[depsKey] = depsValue;
+  }
+  return depsJson;
+};
+
 const _normalizeHyphensInTab = (tokenTabData: string, tabMeta: tabMeta_T): string => {
   if (['FORM', 'LEMMA'].includes(tabMeta['label'])) return tokenTabData;
   else if (['-', '–'].includes(tokenTabData)) return '_';
   else return tokenTabData;
 };
-export const _decodeTabData = (tokenTabData: string, type: string): string | number | featuresJson_T => {
+export const _decodeTabData = (
+  tokenTabData: string,
+  type: tabType_T,
+): string | number | featuresJson_T | depsJson_T => {
   if (type === 'str') {
     return tokenTabData;
   } else if (type === 'int') {
@@ -153,6 +179,8 @@ export const _decodeTabData = (tokenTabData: string, type: string): string | num
     }
   } else if (type === 'dict') {
     return _featuresConllToJson(tokenTabData);
+  } else if (type === 'deps') {
+    return _depsConllToJson(tokenTabData);
   } else {
     throw new Error(`${type} is not a correct type`);
   }
@@ -173,7 +201,7 @@ export const _tokenConllToJson = (tokenConll: string): tokenJson_T => {
       const tabData = _normalizeHyphensInTab(splittedTokenLine[tabIndex], tabMeta);
 
       const label: string = tabMeta['label'];
-      const type: string = tabMeta['type'];
+      const type: tabType_T = tabMeta['type'];
       tokenJson[label] = _decodeTabData(tabData, type);
     }
   }
@@ -229,17 +257,39 @@ export const _featuresJsonToConll = (featuresJson: featuresJson_T): string => {
   return featuresConll;
 };
 
-export const _encodeTabData = (tabData: string | number | featuresJson_T): string => {
-  if (typeof tabData === 'string') {
-    return tabData;
-  } else if (typeof tabData === 'number') {
+// TODO : refactor deps and features by using one generic function that take ":" "=" (and " = " for meta ?) as parameter
+export const _depsJsonToConll = (depsJson: depsJson_T): string => {
+  const splittedDepConll: string[] = [];
+  Object.keys(depsJson)
+    .sort((a, b) => {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    })
+    .forEach((depKey, i) => {
+      const depValue = depsJson[depKey];
+      splittedDepConll.push(`${depKey}:${depValue}`);
+    });
+  let depsConll = splittedDepConll.join('|');
+  if (depsConll === '') {
+    depsConll = '_';
+  }
+  return depsConll;
+};
+
+export const _encodeTabData = (tabData: string | number | featuresJson_T | depsJson_T, type: tabType_T): string => {
+  if (type === 'str') {
+    return tabData as string;
+  } else if (type === 'int') {
     if (tabData === -1) {
       return '_';
     } else {
       return tabData.toString() as string;
     }
-  } else {
+  } else if (type === 'deps') {
+    return _depsJsonToConll(tabData as depsJson_T);
+  } else if (type === 'dict') {
     return _featuresJsonToConll(tabData as featuresJson_T);
+  } else {
+    throw new Error(`${type} is not a correct type`);
   }
 };
 
@@ -249,9 +299,10 @@ export const _tokenJsonToConll = (tokenJson: tokenJson_T): string => {
     if (CONLL_STRUCTURE.hasOwnProperty(tabIndex)) {
       const tabMeta = CONLL_STRUCTURE[tabIndex];
       const tabLabel = tabMeta.label;
+      const tabType = tabMeta.type;
 
       const tabDataJson = tokenJson[tabLabel];
-      const tabDataConll = _encodeTabData(tabDataJson);
+      const tabDataConll = _encodeTabData(tabDataJson, tabType);
       splittedTokenConll.push(tabDataConll);
     }
   }
@@ -468,10 +519,29 @@ export const incrementIndexesOfToken = (
       smartBehavior,
     );
     tokenJson.HEAD = newTokenJsonHead;
+
     if (tokenJson.HEAD === -1) {
       tokenJson.DEPREL = '_';
     }
   }
+  // handle DEPS
+  const newDepsJson: depsJson_T = emptyDepsJson();
+  for (const depHead in tokenJson.DEPS) {
+    if (tokenJson.DEPS.hasOwnProperty(depHead)) {
+      const newDepHead = incrementIndex(
+        'HEAD',
+        parseInt(depHead, 10),
+        arrayFirst,
+        arrayLast,
+        differenceInSize,
+        smartBehavior,
+      );
+      if (newDepHead !== -1) {
+        newDepsJson[newDepHead.toString()] = tokenJson.DEPS[depHead];
+      }
+    }
+  }
+  tokenJson.DEPS = newDepsJson;
   return tokenJson;
 };
 
