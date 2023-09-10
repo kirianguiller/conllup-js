@@ -6,6 +6,8 @@ declare const _default: {
     emptyTreeJson: () => import("./conll").treeJson_T;
     emptyTokenJson: () => import("./conll").tokenJson_T;
     emptyFeaturesJson: () => import("./conll").featuresJson_T;
+    emptyNodesOrGroupsJson: () => import("./conll").nodesJson_T;
+    emptyDepsJson: () => import("./conll").depsJson_T;
     replaceArrayOfTokens: (treeJson: import("./conll").treeJson_T, oldTokensIndexes: number[], newTokensForms: string[], smartBehavior?: boolean) => import("./conll").treeJson_T;
     constructTextFromTreeJson: (treeJson: import("./conll").treeJson_T) => string;
 };

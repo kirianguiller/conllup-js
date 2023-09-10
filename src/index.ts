@@ -6,6 +6,8 @@ import {
   emptyTreeJson,
   emptyTokenJson,
   emptyFeaturesJson,
+  emptyDepsJson,
+  emptyNodesOrGroupsJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
 } from './conll';
@@ -18,6 +20,8 @@ export default {
   emptyTreeJson,
   emptyTokenJson,
   emptyFeaturesJson,
+  emptyNodesOrGroupsJson,
+  emptyDepsJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
 };

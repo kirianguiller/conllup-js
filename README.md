@@ -9,6 +9,8 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+### 3.1
+- add support to Enhanced UD specifications ([link here](https://universaldependencies.org/u/overview/enhanced-syntax.html#ellipsis))
 ### 3.0
 - Change most of variables name to better suit with conllup-py porting 
 - modify _featuresConllToJson() so it order features in the order [specified by UD](https://universaldependencies.org/format.html) (thank you @bguil): 
