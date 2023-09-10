@@ -38,6 +38,7 @@ export interface metaJson_T {
 export interface treeJson_T {
   nodesJson: nodesJson_T;
   groupsJson: groupsJson_T;
+  enhancedNodesJson: enhancedNodesJson_T;
 }
 
 export interface sentenceJson_T {
@@ -68,6 +69,7 @@ export const emptyNodesOrGroupsJson = (): nodesJson_T => ({});
 export const emptyTreeJson = (): treeJson_T => ({
   nodesJson: emptyNodesOrGroupsJson(),
   groupsJson: emptyNodesOrGroupsJson(),
+  enhancedNodesJson: emptyNodesOrGroupsJson(),
 });
 
 export const emptySentenceJson = (): sentenceJson_T => ({
@@ -217,6 +219,9 @@ export const _treeConllLinesToJson = (treeConllLines: string[]): treeJson_T => {
     if (_isGroupToken(tokenJson) === true) {
       // the token is a group token
       treeJson.groupsJson[tokenJson.ID] = tokenJson;
+    } else if (_isEnhancedToken(tokenJson)) {
+      // the token is an enhanced token
+      treeJson.enhancedNodesJson[tokenJson.ID] = tokenJson;
     } else {
       // the token is a normal token
       treeJson.nodesJson[tokenJson.ID] = tokenJson;
@@ -312,7 +317,7 @@ export const _tokenJsonToConll = (tokenJson: tokenJson_T): string => {
 
 export const _treeJsonToConll = (treeJson: treeJson_T): string => {
   const treeConllLines: string[] = [];
-  const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson };
+  const tokensJson = { ...treeJson.nodesJson, ...treeJson.groupsJson, ...treeJson.enhancedNodesJson };
   const tokenIndexes = Object.values(tokensJson).map((tokenJson) => {
     return tokenJson.ID;
   });
@@ -359,17 +364,55 @@ export const _sortTokenIndexes = (tokenIndexes: string[]): string[] => {
 };
 
 export const _compareTokenIndexes = (a: string, b: string): number => {
-  const a1 = parseInt(a.split('-')[0], 10);
-  const b1 = parseInt(b.split('-')[0], 10);
-  if (a1 - b1 !== 0) {
-    return a1 - b1;
+  let a1 = 0;
+  let a2 = 0;
+  let a3 = 0;
+  if (a.indexOf('-') > -1) {
+    a1 = parseInt(a.split('-')[0], 10);
+    a2 = parseInt(a.split('-')[1], 10);
+  } else if (a.indexOf('.') > -1) {
+    a1 = parseInt(a.split('.')[0], 10);
+    a3 = parseInt(a.split('.')[1], 10);
   } else {
-    return b.length - a.length;
+    a1 = parseInt(a, 10);
+  }
+
+  let b1 = 0;
+  let b2 = 0;
+  let b3 = 0;
+  if (b.indexOf('-') > -1) {
+    b1 = parseInt(b.split('-')[0], 10);
+    b2 = parseInt(b.split('-')[1], 10);
+  } else if (b.indexOf('.') > -1) {
+    b1 = parseInt(b.split('.')[0], 10);
+    b3 = parseInt(b.split('.')[1], 10);
+  } else {
+    b1 = parseInt(b, 10);
+  }
+
+  if (a1 - b1 !== 0 || (!a2 && !a3 && !b2 && !b3)) {
+    // first numbers are different, or both number are same and without extension (normally impossible)
+    return a1 - b1;
+  } else if (a3 && b3) {
+    // both are enhanced tokens with same first number (X.1 and X.2 with X a number)
+    return a3 - b3;
+  } else if (a2 && b2) {
+    // both are group tokens with same first number (10-11 ; 10-12) , normally impossible
+    return a2 - b2;
+  } else if (a2 || b3) {
+    // either a is group token (they are before normal tokens) or b is enhanced (they are after normal tokens)
+    return -1;
+  } else {
+    return 1;
   }
 };
 
 export const _isGroupToken = (tokenJson: tokenJson_T): boolean => {
   return tokenJson.ID.indexOf('-') > -1;
+};
+
+export const _isEnhancedToken = (tokenJson: tokenJson_T): boolean => {
+  return tokenJson.ID.indexOf('.') > -1;
 };
 
 // See https://github.com/Arborator/arborator-frontend/issues/184 for a description of the features
@@ -388,6 +431,7 @@ export const replaceArrayOfTokens = (
 ): treeJson_T => {
   const newNodesJson = emptyNodesOrGroupsJson();
   const newGroupsJson = emptyNodesOrGroupsJson();
+  const newEnhancedNodesJson = emptyNodesOrGroupsJson();
 
   let replaceAction: replaceAction_t = 'OTHER';
 
@@ -418,13 +462,7 @@ export const replaceArrayOfTokens = (
       // This smart behavior allow duplication of the fields of the existing token into the renamed (or splitted) token(s)
       const oldTokenIndex = oldTokensIndexes[0];
       newTokenJson = JSON.parse(JSON.stringify(treeJson.nodesJson[oldTokenIndex.toString()]));
-      newTokenJson = incrementIndexesOfToken(
-        newTokenJson,
-        arrayFirst,
-        arrayLast,
-        differenceInSize,
-        smartBehavior,
-      );
+      newTokenJson = incrementIndexesOfToken(newTokenJson, arrayFirst, arrayLast, differenceInSize, smartBehavior);
     }
     newTokenJson.ID = newTokenIndex.toString();
     newTokenJson.FORM = newTokenForm;
@@ -434,7 +472,11 @@ export const replaceArrayOfTokens = (
   }
 
   // add old tokens with corrected indexes
-  for (const oldTokenJson of Object.values({ ...treeJson.nodesJson, ...treeJson.groupsJson })) {
+  for (const oldTokenJson of Object.values({
+    ...treeJson.nodesJson,
+    ...treeJson.groupsJson,
+    ...treeJson.enhancedNodesJson,
+  })) {
     const oldTokenJsonCopy: tokenJson_T = JSON.parse(JSON.stringify(oldTokenJson));
     const newTokenJson = incrementIndexesOfToken(
       oldTokenJsonCopy,
@@ -448,6 +490,8 @@ export const replaceArrayOfTokens = (
       if (_isGroupToken(newTokenJson) === true) {
         // the token is a group token
         newGroupsJson[newTokenJson.ID] = newTokenJson;
+      } else if (_isEnhancedToken(newTokenJson)) {
+        newEnhancedNodesJson[newTokenJson.ID] = newTokenJson;
       } else {
         // the token is a normal token
         newNodesJson[newTokenJson.ID] = newTokenJson;
@@ -457,6 +501,7 @@ export const replaceArrayOfTokens = (
   const newTreeJson: treeJson_T = {
     nodesJson: newNodesJson,
     groupsJson: newGroupsJson,
+    enhancedNodesJson: newEnhancedNodesJson,
   };
   return newTreeJson;
 };
@@ -494,6 +539,22 @@ export const incrementIndexesOfToken = (
     } else {
       tokenJson.ID = '-1';
     }
+  } else if (_isEnhancedToken(tokenJson)) {
+    const [tokenJsonId1, tokenJsonId2] = tokenJson.ID.split('.');
+    const newTokenJsonId1 = incrementIndex(
+      'ID',
+      parseInt(tokenJsonId1, 10),
+      arrayFirst,
+      arrayLast,
+      differenceInSize,
+      smartBehavior,
+    );
+    if (newTokenJsonId1 !== -1) {
+      const newEnhancedTokenId = `${newTokenJsonId1}.${tokenJsonId2}`;
+      tokenJson.ID = newEnhancedTokenId;
+    } else {
+      tokenJson.ID = '-1';
+    }
   } else {
     const tokenJsonId = tokenJson.ID;
     const newTokenJsonId = incrementIndex(
@@ -528,16 +589,23 @@ export const incrementIndexesOfToken = (
   const newDepsJson: depsJson_T = emptyDepsJson();
   for (const depHead in tokenJson.DEPS) {
     if (tokenJson.DEPS.hasOwnProperty(depHead)) {
-      const newDepHead = incrementIndex(
+      let subHead = '';
+      if (depHead.indexOf('.') > -1) {
+        subHead = depHead.split('.')[1];
+      }
+      let newDepHead = incrementIndex(
         'HEAD',
         parseInt(depHead, 10),
         arrayFirst,
         arrayLast,
         differenceInSize,
         smartBehavior,
-      );
-      if (newDepHead !== -1) {
-        newDepsJson[newDepHead.toString()] = tokenJson.DEPS[depHead];
+      ).toString();
+      if (newDepHead !== '-1') {
+        if (subHead !== '') {
+          newDepHead = `${newDepHead}.${subHead}`;
+        }
+        newDepsJson[newDepHead] = tokenJson.DEPS[depHead];
       }
     }
   }

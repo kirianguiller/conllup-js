@@ -24,6 +24,7 @@ import {
   treeJson_T,
   emptyNodesOrGroupsJson,
   _depsConllToJson,
+  _sortTokenIndexes,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -53,7 +54,7 @@ const tokenJson: tokenJson_T = {
 
 const metaJson: metaJson_T = { meta_key: 'meta_value', meta_key2: 'meta_value2' };
 const groupsJson: groupsJson_T = emptyNodesOrGroupsJson();
-const treeJson: treeJson_T = { nodesJson: { '1': tokenJson }, groupsJson };
+const treeJson: treeJson_T = { nodesJson: { '1': tokenJson }, groupsJson, enhancedNodesJson: emptyNodesOrGroupsJson() };
 
 const sentenceJson: sentenceJson_T = { metaJson, treeJson };
 
@@ -133,6 +134,24 @@ const groupTokenJson: tokenJson_T = {
   MISC: {},
 };
 
+// check for enhanced token, for exemple :
+// 1    it           it  _ _ _ _ _ _ _
+// 1.1  secret_node  _   _ _ _ _ _ _ _
+const enhancedTokenLine: string = "1.2	it's	it's	upos	_	_	_	deprel	_	_";
+
+const enhancedTokenJson: tokenJson_T = {
+  ID: '1.2',
+  FORM: "it's",
+  LEMMA: "it's",
+  UPOS: 'upos',
+  XPOS: '_',
+  FEATS: {},
+  HEAD: -1,
+  DEPREL: 'deprel',
+  DEPS: {},
+  MISC: {},
+};
+
 // incomplete line (different than 10 columns per lines)
 const incompleteSmallerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_"; // has only 9 features
 const incompleteBiggerTokenLine = "1-2	it's	it's	upos	_	_	deprel	_	_	_	_"; // has 11 features
@@ -181,6 +200,7 @@ test('_tokenConllToJson', () => {
   expect(_tokenConllToJson(preserveHyphenInFormLemmaLineConll)).toStrictEqual(preserveHyphenInFormLemmaLineJson);
   expect(_tokenConllToJson(equalSymbolInMiscOrFeatureTokenLine)).toStrictEqual(equalSymbolInMiscOrFeatureTokenJson);
   expect(_tokenConllToJson(groupTokenLine)).toStrictEqual(groupTokenJson);
+  expect(_tokenConllToJson(enhancedTokenLine)).toStrictEqual(enhancedTokenJson);
   expect(() => {
     _tokenConllToJson(incompleteSmallerTokenLine);
   }).toThrowError();
@@ -195,6 +215,14 @@ test('_treeConllLinesToJson', () => {
 
 test('sentenceConllToJson', () => {
   expect(sentenceConllToJson(sentenceConll)).toStrictEqual(sentenceJson);
+  expect(sentenceConllToJson(enhancedTokenLine)).toStrictEqual({
+    metaJson: emptyMetaJson(),
+    treeJson: {
+      nodesJson: {},
+      groupsJson: {},
+      enhancedNodesJson: { '1.2': enhancedTokenJson },
+    },
+  });
 });
 
 test('_featuresJsonToConll', () => {
@@ -230,12 +258,35 @@ test('_compareTokenIndexes', () => {
   expect(_compareTokenIndexes('1', '2')).toStrictEqual(-1);
   expect(_compareTokenIndexes('1', '3')).toStrictEqual(-2);
   expect(_compareTokenIndexes('10', '5')).toStrictEqual(5);
-  expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-3);
+  expect(_compareTokenIndexes('10-11', '10')).toStrictEqual(-1);
+  expect(_compareTokenIndexes('10-11', '10-12')).toStrictEqual(-1);
+  expect(_compareTokenIndexes('10', '10-12')).toStrictEqual(1);
+
+  // Add enhanced "empty nodes" (e.g. "5.1" "7.4")
+  expect(_compareTokenIndexes('1', '1.1')).toStrictEqual(-1);
+  expect(_compareTokenIndexes('1.2', '1.4')).toStrictEqual(-2);
+  expect(_compareTokenIndexes('1.4', '1.2')).toStrictEqual(2);
+});
+
+test('_sortTokenIndexes', () => {
+  expect(_sortTokenIndexes(['3', '4-5', '2.1', '2.3', '4-8', '5', '1', '4', '4.2', '2'])).toStrictEqual([
+    '1',
+    '2',
+    '2.1',
+    '2.3',
+    '3',
+    '4-5',
+    '4-8',
+    '4',
+    '4.2',
+    '5',
+  ]);
 });
 
 const conllToJsonToConll = `# meta_key = meta_value
 1-2\tform\t_\t_\t_\t_\t_\t_\t_\t_
 1\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key:dep_value\tSpacesAfter=\\\\t
+1.1\tempty\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key:dep_value\tSpacesAfter=\\\\t
 2\tform\tlemma\tupos\txpos\tfeat_key=feat_value\t2\tdeprel\tdep_key:dep_value\tmisc_key=misc_value`;
 
 test('conllToJsonToConll', () => {
@@ -276,7 +327,7 @@ const nodesJsonToBeReplaceArray: nodesJson_T = {
     FEATS: {},
     HEAD: 4,
     DEPREL: 'det',
-    DEPS: {"4": "det"},
+    DEPS: { '4': 'det' },
     MISC: {},
   },
   '4': {
@@ -288,7 +339,7 @@ const nodesJsonToBeReplaceArray: nodesJson_T = {
     FEATS: {},
     HEAD: 2,
     DEPREL: 'obj',
-    DEPS: {"2": "obj"},
+    DEPS: { '2': 'obj' },
     MISC: {},
   },
   '5': {
@@ -313,6 +364,33 @@ const nodesJsonToBeReplaceArray: nodesJson_T = {
     HEAD: 2,
     DEPREL: '_',
     DEPS: {},
+    MISC: {},
+  },
+};
+
+const enhancedNodesJsonToBeReplaceArray: nodesJson_T = {
+  '2.2': {
+    ID: '2.2',
+    FORM: 'phantom_token',
+    LEMMA: 'phantom',
+    UPOS: 'UNK',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 5,
+    DEPREL: 'unk',
+    DEPS: { '5': 'unk', '5.1': 'unkunk' },
+    MISC: {},
+  },
+  '5.1': {
+    ID: '5.1',
+    FORM: 'phantom_token',
+    LEMMA: 'phantom',
+    UPOS: 'UNK',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: 'unk',
+    DEPS: { '2': 'unk' },
     MISC: {},
   },
 };
@@ -359,6 +437,7 @@ const groupsJsonToBeReplaceArray: nodesJson_T = {
 const treeJsonToBeReplaceArrayWithGroup: treeJson_T = {
   nodesJson: nodesJsonToBeReplaceArray,
   groupsJson: groupsJsonToBeReplaceArray,
+  enhancedNodesJson: enhancedNodesJsonToBeReplaceArray,
 };
 
 const nodesJsonReplacedArray: nodesJson_T = {
@@ -395,7 +474,7 @@ const nodesJsonReplacedArray: nodesJson_T = {
     FEATS: {},
     HEAD: 5,
     DEPREL: 'det',
-    DEPS: {"5":"det"},
+    DEPS: { '5': 'det' },
     MISC: {},
   },
   '4': {
@@ -407,7 +486,7 @@ const nodesJsonReplacedArray: nodesJson_T = {
     FEATS: {},
     HEAD: 5,
     DEPREL: 'det',
-    DEPS: {"5":"det"},
+    DEPS: { '5': 'det' },
     MISC: {},
   },
   '5': {
@@ -419,7 +498,7 @@ const nodesJsonReplacedArray: nodesJson_T = {
     FEATS: {},
     HEAD: 2,
     DEPREL: 'obj',
-    DEPS: {"2": "obj"},
+    DEPS: { '2': 'obj' },
     MISC: {},
   },
   '6': {
@@ -444,6 +523,33 @@ const nodesJsonReplacedArray: nodesJson_T = {
     HEAD: 2,
     DEPREL: '_',
     DEPS: {},
+    MISC: {},
+  },
+};
+
+const enhancedNodesJsonReplacedArray: nodesJson_T = {
+  '2.2': {
+    ID: '2.2',
+    FORM: 'phantom_token',
+    LEMMA: 'phantom',
+    UPOS: 'UNK',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 6,
+    DEPREL: 'unk',
+    DEPS: { '6': 'unk', '6.1': 'unkunk' },
+    MISC: {},
+  },
+  '6.1': {
+    ID: '6.1',
+    FORM: 'phantom_token',
+    LEMMA: 'phantom',
+    UPOS: 'UNK',
+    XPOS: '_',
+    FEATS: {},
+    HEAD: 2,
+    DEPREL: 'unk',
+    DEPS: { '2': 'unk' },
     MISC: {},
   },
 };
@@ -478,6 +584,7 @@ const groupsJsonReplacedArray: nodesJson_T = {
 const treeJsonReplacedArrayWithGroup: treeJson_T = {
   nodesJson: nodesJsonReplacedArray,
   groupsJson: groupsJsonReplacedArray,
+  enhancedNodesJson: enhancedNodesJsonReplacedArray,
 };
 
 test('replaceArrayOfTokensWithGroupWithSmartBehavior', () => {
@@ -487,6 +594,7 @@ test('replaceArrayOfTokensWithGroupWithSmartBehavior', () => {
 });
 
 const treeJsonToBeReplaceArray: treeJson_T = {
+  enhancedNodesJson: emptyNodesOrGroupsJson(),
   nodesJson: {
     '1': {
       ID: '1',
@@ -541,6 +649,7 @@ const treeJsonToBeReplaceArray: treeJson_T = {
 };
 
 const treeJsonReplacedArrayWithoutSmartBehavior: treeJson_T = {
+  enhancedNodesJson: emptyNodesOrGroupsJson(),
   nodesJson: {
     '1': {
       ID: '1',
@@ -607,6 +716,7 @@ const treeJsonReplacedArrayWithoutSmartBehavior: treeJson_T = {
 };
 
 const treeJsonReplacedArrayWithSmartBehavior: treeJson_T = {
+  enhancedNodesJson: emptyNodesOrGroupsJson(),
   nodesJson: {
     '1': {
       ID: '1',
@@ -687,6 +797,7 @@ test('replaceArrayOfTokenWithSmartBehavior', () => {
 const sentenceJsonToReconstructText: sentenceJson_T = {
   metaJson: emptyMetaJson(),
   treeJson: {
+    enhancedNodesJson: emptyNodesOrGroupsJson(),
     nodesJson: {
       '1': {
         ID: '1',
@@ -786,6 +897,7 @@ test('constructTextFromTreeJson', () => {
 const sentenceJsonToReconstructTextWithSpacesAfter: sentenceJson_T = {
   metaJson: emptyMetaJson(),
   treeJson: {
+    enhancedNodesJson: emptyNodesOrGroupsJson(),
     nodesJson: {
       '1': {
         ID: '1',
@@ -846,4 +958,5 @@ test('_depsConllToJson', () => {
   expect(_depsConllToJson('1:dep')).toStrictEqual({ '1': 'dep' });
   expect(_depsConllToJson('1:dep:blop')).toStrictEqual({ '1': 'dep:blop' });
   expect(_depsConllToJson('1:dep:blop|2:mod')).toStrictEqual({ '1': 'dep:blop', '2': 'mod' });
+  expect(_depsConllToJson('1.2:dep:blop|2:mod')).toStrictEqual({ '1.2': 'dep:blop', '2': 'mod' });
 });
