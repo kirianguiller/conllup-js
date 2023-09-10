@@ -415,11 +415,11 @@ export const replaceArrayOfTokens = (
       smartBehavior === true &&
       (replaceAction === 'RENAME_ONE_TOKEN' || replaceAction === 'SPLIT_ONE_TOKEN_INTO_MANY')
     ) {
+      // This smart behavior allow duplication of the fields of the existing token into the renamed (or splitted) token(s)
       const oldTokenIndex = oldTokensIndexes[0];
       newTokenJson = JSON.parse(JSON.stringify(treeJson.nodesJson[oldTokenIndex.toString()]));
-      newTokenJson.HEAD = incrementIndex(
-        'HEAD',
-        newTokenJson.HEAD,
+      newTokenJson = incrementIndexesOfToken(
+        newTokenJson,
         arrayFirst,
         arrayLast,
         differenceInSize,
