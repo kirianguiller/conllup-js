@@ -10,6 +10,7 @@ import {
   emptyNodesOrGroupsJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
+  returnTokensInOrder,
 } from './conll';
 
 export default {
@@ -24,4 +25,5 @@ export default {
   emptyDepsJson,
   replaceArrayOfTokens,
   constructTextFromTreeJson,
+  returnTokensInOrder,
 };

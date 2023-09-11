@@ -9,6 +9,8 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+### 3.1.1
+- add: returnTokensInOrder() function that returns tokens of a tree in correct (UD) order (according to group, enhanced and normal tokens rules)
 ### 3.1
 - add support to Enhanced UD specifications ([link here](https://universaldependencies.org/u/overview/enhanced-syntax.html#ellipsis))
 ### 3.0

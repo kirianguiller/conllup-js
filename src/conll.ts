@@ -662,3 +662,20 @@ export const constructTextFromTreeJson = (treeJson: treeJson_T) => {
   }
   return sentence;
 };
+
+export const returnTokensInOrder = (
+  treeJson: treeJson_T,
+  includeEnhanced: boolean = false,
+  includeGroup: boolean = false,
+) => {
+  const combinedArray = [...Object.values(treeJson.nodesJson)];
+  if (includeEnhanced) {
+    combinedArray.push(...Object.values(treeJson.enhancedNodesJson));
+  }
+  if (includeGroup) {
+    combinedArray.push(...Object.values(treeJson.groupsJson));
+  }
+
+  combinedArray.sort((token1, token2) => _compareTokenIndexes(token1.ID, token2.ID));
+  return combinedArray;
+};

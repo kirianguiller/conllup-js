@@ -25,6 +25,7 @@ import {
   emptyNodesOrGroupsJson,
   _depsConllToJson,
   _sortTokenIndexes,
+  returnTokensInOrder,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -959,4 +960,22 @@ test('_depsConllToJson', () => {
   expect(_depsConllToJson('1:dep:blop')).toStrictEqual({ '1': 'dep:blop' });
   expect(_depsConllToJson('1:dep:blop|2:mod')).toStrictEqual({ '1': 'dep:blop', '2': 'mod' });
   expect(_depsConllToJson('1.2:dep:blop|2:mod')).toStrictEqual({ '1.2': 'dep:blop', '2': 'mod' });
+});
+
+test('returnTokensInOrder', () => {
+  expect(
+    returnTokensInOrder(treeJsonReplacedArrayWithGroup).map((token) => {
+      return token.ID;
+    }),
+  ).toStrictEqual(['1', '2', '3', '4', '5', '6', '7']);
+  expect(
+    returnTokensInOrder(treeJsonReplacedArrayWithGroup, true).map((token) => {
+      return token.ID;
+    }),
+  ).toStrictEqual(['1', '2', '2.2', '3', '4', '5', '6', '6.1', '7']);
+  expect(
+    returnTokensInOrder(treeJsonReplacedArrayWithGroup, true, true).map((token) => {
+      return token.ID;
+    }),
+  ).toStrictEqual(['1-2', '1', '2', '2.2', '3', '4', '5', '6-7', '6', '6.1', '7']);
 });
