@@ -1010,9 +1010,17 @@ describe('getNodeFromTreeJson', () => {
     expect(getNodeFromTreeJson(mockTreeJson, '1')).toEqual(mockNormalJson);
   });
 
-  it('should throw an error if the node does not exist', () => {
-    expect(() => getNodeFromTreeJson(mockTreeJson, 'non-existent')).toThrowError(
-      'node non-existent not found in treeJson',
+  it('should throw an error if the node does not exist and throwErrorIfMissing is true', () => {
+    expect(() => getNodeFromTreeJson(mockTreeJson, 'non-existent', true)).toThrowError(
+      'node non-existent not found in treeJson and throwErrorIfMissing is true',
     );
+  });
+
+  it('should return undefined if the node does not exist and throwErrorIfMissing is false', () => {
+    expect(getNodeFromTreeJson(mockTreeJson, 'non-existent', false)).toBeNull();
+  });
+
+  it('should return undefined if the node does not exist and throwErrorIfMissing is not provided', () => {
+    expect(getNodeFromTreeJson(mockTreeJson, 'non-existent')).toBeNull();
   });
 });

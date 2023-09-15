@@ -9,6 +9,8 @@ It is currently being used in :
 - [Surface Syntactic SUD](https://surfacesyntacticud.github.io) : A guideline on Surface Syntactic Universal Dependencies (SUD). Just check the website and try to interact with the dependency trees to have a live demo :D.
 
 ## Updates history
+### 3.1.3
+- minor change: getNodeFromTreeJson() (previously implemented) throw error in case of non existance of token only if specified 
 ### 3.1.2
 - add: getNodeFromTreeJson() function that returns a node from a tree given it's index that can be a enhanced, group or normal token (indices have different format)
 ### 3.1.1

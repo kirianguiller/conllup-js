@@ -680,7 +680,11 @@ export const returnTokensInOrder = (
   return combinedArray;
 };
 
-export const getNodeFromTreeJson = (treeJson: treeJson_T, nodeIndex: string): tokenJson_T => {
+export const getNodeFromTreeJson = (
+  treeJson: treeJson_T,
+  nodeIndex: string,
+  throwErrorIfMissing: boolean = false,
+): tokenJson_T | null => {
   // this helper function is used to get a node from a treeJson and abstract the
   // difference between enhanced nodes, group nodes and normal nodes
   let node: tokenJson_T;
@@ -693,8 +697,10 @@ export const getNodeFromTreeJson = (treeJson: treeJson_T, nodeIndex: string): to
   }
   if (node) {
     return node;
+  } else if (throwErrorIfMissing) {
+    throw new Error(`node ${nodeIndex} not found in treeJson and throwErrorIfMissing is true`);
   } else {
-    throw new Error(`node ${nodeIndex} not found in treeJson`);
+    return null;
   }
 };
 // next line are some jest test

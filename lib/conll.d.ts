@@ -73,5 +73,5 @@ export declare const incrementIndexesOfToken: (tokenJson: tokenJson_T, arrayFirs
 export declare const incrementIndex: (idOrHead: 'ID' | 'HEAD', index: number, arrayFirst: number, arrayLast: number, differenceInSize: number, smartBehavior: boolean) => number;
 export declare const constructTextFromTreeJson: (treeJson: treeJson_T) => string;
 export declare const returnTokensInOrder: (treeJson: treeJson_T, includeEnhanced?: boolean, includeGroup?: boolean) => tokenJson_T[];
-export declare const getNodeFromTreeJson: (treeJson: treeJson_T, nodeIndex: string) => tokenJson_T;
+export declare const getNodeFromTreeJson: (treeJson: treeJson_T, nodeIndex: string, throwErrorIfMissing?: boolean) => tokenJson_T | null;
 export {};
