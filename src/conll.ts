@@ -679,3 +679,23 @@ export const returnTokensInOrder = (
   combinedArray.sort((token1, token2) => _compareTokenIndexes(token1.ID, token2.ID));
   return combinedArray;
 };
+
+export const getNodeFromTreeJson = (treeJson: treeJson_T, nodeIndex: string): tokenJson_T => {
+  // this helper function is used to get a node from a treeJson and abstract the
+  // difference between enhanced nodes, group nodes and normal nodes
+  let node: tokenJson_T;
+  if (nodeIndex.indexOf('.') > -1) {
+    node = treeJson.enhancedNodesJson[nodeIndex];
+  } else if (nodeIndex.indexOf('-') > -1) {
+    node = treeJson.groupsJson[nodeIndex];
+  } else {
+    node = treeJson.nodesJson[nodeIndex];
+  }
+  if (node) {
+    return node;
+  } else {
+    throw new Error(`node ${nodeIndex} not found in treeJson`);
+  }
+};
+// next line are some jest test
+// export const _test = {

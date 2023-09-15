@@ -26,6 +26,8 @@ import {
   _depsConllToJson,
   _sortTokenIndexes,
   returnTokensInOrder,
+  getNodeFromTreeJson,
+  emptyTokenJson,
 } from './conll';
 
 const featureConll = 'feat_key1=feat_value1|feat_key2=feat_value2';
@@ -978,4 +980,39 @@ test('returnTokensInOrder', () => {
       return token.ID;
     }),
   ).toStrictEqual(['1-2', '1', '2', '2.2', '3', '4', '5', '6-7', '6', '6.1', '7']);
+});
+
+describe('getNodeFromTreeJson', () => {
+  const mockNodeJson: tokenJson_T = emptyTokenJson();
+  mockNodeJson.ID = '1.2';
+
+  const mockGroupJson: tokenJson_T = emptyTokenJson();
+  mockGroupJson.ID = '1-2';
+
+  const mockNormalJson: tokenJson_T = emptyTokenJson();
+  mockNormalJson.ID = '1';
+
+  const mockTreeJson: treeJson_T = {
+    enhancedNodesJson: { '1.2': mockNodeJson },
+    groupsJson: { '1-2': mockGroupJson },
+    nodesJson: { '1': mockNormalJson },
+  };
+
+  it('should return the correct enhanced node', () => {
+    expect(getNodeFromTreeJson(mockTreeJson, '1.2')).toEqual(mockNodeJson);
+  });
+
+  it('should return the correct group node', () => {
+    expect(getNodeFromTreeJson(mockTreeJson, '1-2')).toEqual(mockGroupJson);
+  });
+
+  it('should return the correct normal node', () => {
+    expect(getNodeFromTreeJson(mockTreeJson, '1')).toEqual(mockNormalJson);
+  });
+
+  it('should throw an error if the node does not exist', () => {
+    expect(() => getNodeFromTreeJson(mockTreeJson, 'non-existent')).toThrowError(
+      'node non-existent not found in treeJson',
+    );
+  });
 });

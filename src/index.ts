@@ -11,6 +11,7 @@ import {
   replaceArrayOfTokens,
   constructTextFromTreeJson,
   returnTokensInOrder,
+  getNodeFromTreeJson,
 } from './conll';
 
 export default {
@@ -26,4 +27,5 @@ export default {
   replaceArrayOfTokens,
   constructTextFromTreeJson,
   returnTokensInOrder,
+  getNodeFromTreeJson,
 };
